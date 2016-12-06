@@ -1,14 +1,8 @@
-# A Blank PhoneGap App
+# Jinjiu Mission App
 
-## Usage
+## Download
 
-### PhoneGap CLI
+    https://build.phonegap.com/apps/2385946/share
 
-    $ phonegap create my-app --template blank
 
-### Desktop
-
-In your browser, open the file:
-
-    /www/index.html
 
