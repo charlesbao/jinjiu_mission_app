@@ -1,7 +1,7 @@
 {
-  "name": "phonegap-template-blank",
-  "version": "1.1.0",
-  "description": "blank template for phonegap and cordova projects",
+  "name": "jingjiu_mission",
+  "version": "0.0.1",
+  "description": "jingjiu_mission",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/phonegap/phonegap-app-blank.git"
