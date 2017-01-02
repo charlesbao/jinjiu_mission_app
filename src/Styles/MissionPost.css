@@ -1,0 +1,38 @@
+.mission-post-first--title{
+    padding: 0 15px;
+    line-height:2;
+    font-weight:500;
+    margin-top:10px;
+}
+.mission-post-first--icon{
+    width:6px;
+    height:16px;
+    margin-bottom:-2px;
+    margin-right:10px;
+    background: rgb(0, 188, 212);
+    display: inline-block;
+}
+.mission-post--tutorial{
+    white-space: pre-line;
+    color: #676767;
+    padding:10px 15px;
+}
+.mission-post--wrapper{
+    margin-top:120px;
+}
+.mission-post--picsWrapper,.mission-post--buttonGroup,.mission-post--commentWrapper{
+    padding:0 15px;
+    margin-top:10px;
+}
+.mission-post--picsLabel{
+    margin-top:15px;
+    padding-left:15px;
+    font-size: 12px;
+    line-height: 22px;
+    pointer-events: none;
+    color: rgba(0, 0, 0, 0.298039);
+}
+.mission-post--commentWrapper{
+}
+.mission-post--buttonGroup{
+}

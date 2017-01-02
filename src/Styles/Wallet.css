@@ -1,0 +1,41 @@
+.wallet--master-count{
+    width:100%;
+    padding:15px;
+    box-sizing: border-box;
+}
+.wallet--master-count .label{
+    font-size:20px;
+    line-height:2;
+}
+.wallet--master-count .count{
+    line-height:1.5;
+    font-size:40px;
+    text-align: right;
+    padding-right:10px;
+}
+
+.wallet--sub-count{
+
+}
+
+.wallet--sub-count--left,.wallet--sub-count--right{
+    display: inline-block;
+    width:50%;
+    padding: 15px;
+    box-sizing: border-box;
+}
+
+.wallet--sub-count--left .label,.wallet--sub-count--right .label{
+    line-height:2;
+}
+
+.wallet--sub-count--left .count,.wallet--sub-count--right .count{
+    line-height:1.5;
+    font-size:30px;
+    text-align: right;
+    padding-right:10px;
+}
+
+.wallet--button-group{
+    padding:20px;
+}

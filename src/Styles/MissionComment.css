@@ -1,0 +1,36 @@
+.mission-comment-first--title{
+    padding: 0 15px;
+    line-height:2;
+    font-weight:500;
+    margin-top:10px;
+}
+.mission-comment-first--icon{
+    width:6px;
+    height:16px;
+    margin-bottom:-2px;
+    margin-right:10px;
+    background: rgb(0, 188, 212);
+    display: inline-block;
+}
+.mission-comment-title{
+    padding:10px 30px;
+    line-height: 20px;
+    font-size: 18px;
+    color: #676767;
+    word-break: break-all;
+}
+.mission-comment-price{
+    padding:10px 30px;
+    font-size: 20px;
+    color: #6B69CC;
+    font-weight: bold;
+}
+.mission-comment-price--label{
+    color: #B6B6B6;
+    font-size: 14px;
+    margin-left: 2px;
+}
+.mission-comment-wrapper{
+    box-sizing: border-box;
+    padding:0 15px;
+}
