@@ -22,7 +22,7 @@ import Search from "./Views/Mission/Search"
 import UserMission from "./Views/Mission/UserMission"
 import MissionDetail from './Views/Mission/MissionDetail'
 import MissionPost from './Views/Mission/MissionPost'
-import Comment from './Views/Mission/Comment'
+import Comment from './Views/Mission/MissionComment'
 
 import Wallet from './Views/User/Wallet'
 import Withdraws from './Views/User/Withdraws'

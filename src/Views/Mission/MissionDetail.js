@@ -69,7 +69,8 @@ class MissionDetailSection extends Component {
 
                 <ScrollView style={{top:this.state.top,bottom:55,paddingTop:15}}>{ this.renderView() }</ScrollView>
 
-                <MissionBottomNavBar isEnd={currentMission['isEnd']}
+                <MissionBottomNavBar canBeRepeat={currentMission['canBeRepeat']}
+                                     isEnd={currentMission['isEnd']}
                                      missionButtonType={currentProcess}
                                      hasFavour={currentFavour}
                                      favourTap={this.favourTapHandle.bind(this)}
@@ -119,7 +120,7 @@ class MissionDetailSection extends Component {
 
     favourTapHandle(){
         const {currentMission,currentUserMissionId,currentFavour,currentProcess} = this.props;
-        this.props.postUpdateUserMission(currentUserMissionId,currentMission['id'],!currentFavour,currentProcess,null);
+        this.props.postUpdateUserMission(currentUserMissionId,currentMission['id'],!currentFavour,currentProcess,false);
         this.setState({
             loading:true
         });
@@ -129,7 +130,7 @@ class MissionDetailSection extends Component {
         switch (currentProcess){
             case CONSTANTS.MISSION_CONDITION.ON_PREPARE:
             default:
-                this.props.postUpdateUserMission(currentUserMissionId,currentMission['id'],currentFavour,CONSTANTS.MISSION_CONDITION.ON_PROGRESS,new Date());
+                this.props.postUpdateUserMission(currentUserMissionId,currentMission['id'],currentFavour,CONSTANTS.MISSION_CONDITION.ON_PROGRESS,true);
                 this.setState({
                     loading:true
                 });
@@ -213,8 +214,8 @@ const mapDispatch = (dispatch)=>{
                 currentMission:currentMission
             })
         },
-        postUpdateUserMission:(userMissionId,missionId,favour,process,missionCreatedAt)=>{
-            PostActions.postUpdateUserMission(userMissionId,missionId,favour,process,missionCreatedAt,(userMission)=>{
+        postUpdateUserMission:(userMissionId,missionId,favour,process,startMission)=>{
+            PostActions.postUpdateUserMission(userMissionId,missionId,favour,process,startMission,(userMission)=>{
                 dispatch({
                     type:ACTION_TYPE.USER_ACTIONS.POST_UPDATE_USER_MISSION,
                     userMission:userMission

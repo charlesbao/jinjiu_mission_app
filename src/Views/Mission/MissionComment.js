@@ -29,9 +29,9 @@ class Comment extends Component {
     componentDidMount(){
         this.unsubscribe = this.context.store.subscribe(()=>{
             this.setState({
-                loading:false,
-                comment:""
+                loading:false
             })
+            this.context.router.goBack()
         })
     }
     componentWillUnmount(){
@@ -80,9 +80,9 @@ class Comment extends Component {
     }
 
     onPostComment(){
-        const {currentMission} = this.props;
+        const {currentMission,currentUserMissionId} = this.props;
         const {comment} = this.state
-        this.props.postComment(currentMission['id'],comment)
+        this.props.postMissionComment(currentUserMissionId,currentMission['id'],comment)
     }
 }
 
@@ -100,8 +100,8 @@ const mapState = (state)=>{
 
 const mapDispatch = (dispatch)=>{
     return {
-        postComment:(missionId,comment)=>{
-            PostAction.postComment(missionId,comment,(userMission)=>{
+        postMissionComment:(currentUserMissionId,missionId,comment)=>{
+            PostAction.postMissionComment(currentUserMissionId,missionId,comment,(userMission)=>{
                 dispatch({
                     type:ACTION_TYPE.USER_ACTIONS.POST_UPDATE_USER_MISSION,
                     userMission:userMission

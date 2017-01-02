@@ -9,7 +9,7 @@ import {List, ListItem} from 'material-ui/List';
 import moment from 'moment'
 import CONSTANTS from '../../../Constants'
 
-export const MissionBottomNavBar = ({isEnd,missionButtonType,hasFavour,favourTap,missionTap})=>{
+export const MissionBottomNavBar = ({canBeRepeat,isEnd,missionButtonType,hasFavour,favourTap,missionTap})=>{
     let missionLabel = "";
     let disabled = false;
     if(isEnd){
@@ -30,6 +30,15 @@ export const MissionBottomNavBar = ({isEnd,missionButtonType,hasFavour,favourTap
                 break;
             case CONSTANTS.MISSION_CONDITION.ON_DESTROY:
                 missionLabel = "重置任务";
+                break;
+            case CONSTANTS.MISSION_CONDITION.ON_FINISH:
+                if(!canBeRepeat){
+                    missionLabel = "已完成任务";
+                    disabled = true;
+                }else{
+                    missionLabel = "开始任务";
+                }
+                break;
         }
     }
 

@@ -4,8 +4,8 @@
 import WebAPI from './WebAPI'
 import AV from 'leancloud-storage'
 export default {
-    postUpdateUserMission(userMissionId,missionId,favour,process,missionCreatedAt,callback){
-        WebAPI.createOrUpdateUserMission(userMissionId,AV.User.current(),missionId,favour,process,missionCreatedAt,function(userMission){
+    postUpdateUserMission(userMissionId,missionId,favour,process,startMission,callback){
+        WebAPI.createOrUpdateUserMission(userMissionId,AV.User.current(),missionId,favour,process,startMission,function(userMission){
             callback(userMission)
         })
     },
@@ -26,8 +26,8 @@ export default {
         })
     },
 
-    postComment(missionId,comment,callback){
-        WebAPI.createOrUpdateComment(null,AV.User.current(),missionId,comment,function(result){
+    postMissionComment(userMissionId,missionId,comment,callback){
+        WebAPI.createComment(AV.User.current(),userMissionId, missionId,comment,function(result){
             callback(result)
         })
     },

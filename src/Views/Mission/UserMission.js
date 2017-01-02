@@ -67,7 +67,6 @@ class MissionSection extends Component {
             userMissionList: this.props.userMissionArray,
             currentIndex: this.props.currentUserMissionIndex,
             comment: this.onCommentHandle.bind(this),
-            onDelete: this.onDeleteHandle.bind(this),
             onListTap: this.onTapHandle.bind(this),
             knowMore: this.onKnowMoreHandle.bind(this),
             rePost: this.onRePostHandle.bind(this)
@@ -76,10 +75,6 @@ class MissionSection extends Component {
         return (
             <ContainerWithBackBar title="我的任务">
                 <LoadingMask show={this.state.loading} />
-                <DeleteAlertDialog open={this.state.deleteId != -1}
-                             deleteClose={this.handleDelete.bind(this)}
-                             close={this.handleClose.bind(this)}
-                             label="任务已失效"/>
                 <AlertDialog open={this.state.alert != ""}
                              close={()=>this.setState({alert:""})}
                              content={this.state.alert}/>
@@ -124,25 +119,6 @@ class MissionSection extends Component {
         this.props.setCurrentMission(currentMission)
         this.context.router.push(CONSTANTS.ROUTER_PATH.MISSION.MISSION_DETAIL)
     }
-
-    onDeleteHandle(missionId){
-        this.setState({
-            deleteId:missionId
-        })
-    }
-
-    handleClose(){
-        this.setState({
-            deleteId:-1,
-        })
-    }
-
-    handleDelete(){
-        this.props.removeCurrentMission(this.state.deleteId)
-        this.setState({
-            loading:true
-        })
-    }
 }
 
 
@@ -167,7 +143,6 @@ const mapState = (state)=>{
 const mapDispatch = (dispatch)=>{
     return {
         setCurrentUserMissionId:(currentUserMissionId)=>{
-            console.log(currentUserMissionId)
             dispatch({
                 type:ActionType.USER_ACTIONS.SET_CURRENT_USER_MISSION_ID,
                 currentUserMissionId:currentUserMissionId
@@ -183,14 +158,6 @@ const mapDispatch = (dispatch)=>{
             dispatch({
                 type:ActionType.STATE_ACTIONS.SET_CURRENT_USER_MISSION_INDEX,
                 data:route
-            })
-        },
-        removeCurrentMission:(missionId)=>{
-            PostAction.postUserRemoveDestroyMission(missionId,(result)=>{
-                dispatch({
-                    type:ActionType.USER_ACTIONS.POST_USER_REMOVE_DESTROY_MISSION,
-                    data:result
-                })
             })
         }
     }

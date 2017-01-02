@@ -85,7 +85,10 @@ const queryMissionsByAttribute = exports.queryMissionsByAttribute = function(pag
 const queryUserMissions = exports.queryUserMissions = function(currentUser,callback){
     const query = new AV.Query('userMission');
     query.equalTo('user',currentUser);
-    query.include('mission')
+    query.addAscending('process');
+    query.addAscending('hasComment');
+    query.addDescending('missionCreatedAt');
+    query.include('mission');
     query.find().then(function(missions){
         let arr = [];
         missions.map(function(result){
@@ -96,6 +99,7 @@ const queryUserMissions = exports.queryUserMissions = function(currentUser,callb
                 commentBack: result.get('commentBack'),
                 favor:result.get('favor'),
                 process:result.get('process'),
+                hasComment:result.get('hasComment'),
                 missionCreatedAt: result.get('missionCreatedAt')
             };
             if(dict['process'] == Constant.MISSION_CONDITION.ON_PROGRESS){
@@ -140,27 +144,20 @@ const verifySmsNumber = exports.verifySmsNumber = function(smsNumber,mobilePhone
     });
 };
 
-const createOrUpdateComment = exports.createOrUpdateComment = function (commentId, currentUser, missionId, content,callback) {
-    let missionComment;
-    if(commentId!=null){
-        missionComment = new AV.Object.createWithoutData("missionComment",commentId);
-    }else{
-        missionComment = new AV.Object("missionComment");
-    }
+const createComment = exports.createComment = function (currentUser,userMissionId, missionId, content,callback) {
+    const missionComment = new AV.Object("missionComment");
     const mission = AV.Object.createWithoutData('mission', missionId);
-    missionComment.set('user',currentUser)
-    missionComment.set('content',content)
-    missionComment.set('targetMission',mission)
-    missionComment.save().then(function(comment){
-        const dict = {
-            id: comment.id,
-            userId:currentUser.id,
-            content:comment.get('content'),
-            nickname:currentUser.get('nickname'),
-            avatar:currentUser.get('avatar'),
-            createAt:comment.createdAt
-        }
-        callback(dict)
+    missionComment.set('user',currentUser);
+    missionComment.set('content',content);
+    missionComment.set('targetMission',mission);
+    missionComment.save().then(function(){
+        const userMission = AV.Object.createWithoutData('userMission', userMissionId);
+        userMission.set('hasComment',true);
+        userMission.save().then(function(){
+            queryUserMissions(currentUser,function(result){
+                callback(result)
+            })
+        });
     },function(error){
         callback(null)
     })
@@ -212,7 +209,7 @@ const queryRelatedMissions = exports.queryRelatedMissions = function(missionId,a
 };
 
 //添加userMission
-const createOrUpdateUserMission = exports.createOrUpdateUserMission = function(userMissionId,currentUser,missionId,favour,process,missionCreatedAt,callback){
+const createOrUpdateUserMission = exports.createOrUpdateUserMission = function(userMissionId,currentUser,missionId,favour,process,startMission,callback){
 
     function insideCreateUpdateMission(userMission,callback){
         //如果没有存在的mission，则创建
@@ -221,8 +218,10 @@ const createOrUpdateUserMission = exports.createOrUpdateUserMission = function(u
         userMission.set('user',currentUser);
         userMission.set('process',process);
         userMission.set('favor',favour);
-        if(missionCreatedAt != null){
-            userMission.set('missionCreatedAt',missionCreatedAt)
+        if(startMission){
+            userMission.set('missionCreatedAt',new Date())
+        }else{
+            userMission.set('favorCreatedAt',new Date())
         }
         userMission.save().then(function(){
             queryUserMissions(currentUser,function(result){

@@ -33,7 +33,7 @@ class First extends Component {
                                        initFresh={this.props.initFresh}
                                        loadMore={this.loadMoreHandle.bind(this)}
                                        onRefresh={this.refreshHandle.bind(this)}
-                                       style={{top:document.body.clientWidth/1.875 + 36,bottom:56}}>
+                                       style={{top:document.body.clientWidth/2 + 32,bottom:56}}>
                     <MissionList list={this.props.missionArray} onListTap={this.onListTapHandle.bind(this)}/>
                 </ScrollListWithRefresh>
             </Wrapper>

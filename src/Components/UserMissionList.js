@@ -1,5 +1,4 @@
 import React, {Component} from 'react';
-import RaisedButton from 'material-ui/RaisedButton';
 import FontIcon from 'material-ui/FontIcon'
 import moment from 'moment'
 import CONSTANTS from '../Constants'
@@ -24,7 +23,7 @@ moment.locale('en', {
     }
 });
 
-const MissionList = ({currentIndex,userMissionList,onDelete,onListTap,knowMore,rePost,comment})=>(
+const MissionList = ({currentIndex,userMissionList,onListTap,knowMore,rePost,comment})=>(
     <div>
         {
             userMissionList.map((item,index)=> {
@@ -33,6 +32,7 @@ const MissionList = ({currentIndex,userMissionList,onDelete,onListTap,knowMore,r
                     theMission:mission,
                     process:item['process'],
                     commentBack:item['commentBack'],
+                    hasComment:item['hasComment'],
 
                     knowMore:()=>knowMore(item['commentBack']),
                     comment:()=>comment(item['id'],item['mission']),
@@ -66,6 +66,7 @@ const ListItem = ({
     onListTap,
     commentBack,
     process,
+    hasComment,
     comment,
     knowMore,
     rePost
@@ -78,7 +79,8 @@ const ListItem = ({
                 <MissionContent title={title} count={count} publishTime={createdAt} />
                 <MissionFooter price={price} commentBack={commentBack} process={process} />
             </div>
-            <MissionCommentBack knowMore={knowMore}
+            <MissionCommentBack hasComment={hasComment}
+                                knowMore={knowMore}
                                 rePost={rePost}
                                 comment={comment}
                                 process={process}
@@ -153,7 +155,7 @@ const MissionFooter = ({price,commentBack,process})=> {
     )
 };
 
-const MissionCommentBack = ({process,commentBack,knowMore,rePost,comment})=>{
+const MissionCommentBack = ({process,commentBack,hasComment,knowMore,rePost,comment})=>{
     switch (process){
         case CONSTANTS.MISSION_CONDITION.ON_CHECKING:
             if(commentBack != ""){
@@ -166,9 +168,14 @@ const MissionCommentBack = ({process,commentBack,knowMore,rePost,comment})=>{
             }
             break;
         case CONSTANTS.MISSION_CONDITION.ON_FINISH:
+            console.log(hasComment)
             return (
                 <div className="mission-list-checkButton">
-                    <div className="checkButton" onTouchTap={comment}>评论</div>
+                    {
+                        hasComment ?
+                            <div className="checkButton-disabled">已评论</div> :
+                            <div className="checkButton" onTouchTap={comment}>评论</div>
+                    }
                 </div>
             );
             break;

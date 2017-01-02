@@ -57,6 +57,10 @@ export default (state = initialState, action)=>{
             return Object.assign({},state,{
                 relatedMissions:action.relatedMissions
             });
+        case ACTIONS.CLEAR_CURRENT_RELATED_MISSIONS:
+            return Object.assign({},state,{
+                relatedMissions:[]
+            });
 
         case ACTIONS.CLEAR:
             return Object.assign({},state,{

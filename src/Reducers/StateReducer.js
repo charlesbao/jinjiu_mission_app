@@ -49,7 +49,6 @@ export default (state = initialState, action)=>{
         case ACTIONS.SET_MISSION_LIST_SCROLL_TOP:
             let tmpDict = {};
             tmpDict[state.filterIndex.toString()] = action.data;
-            console.log(Object.assign({},state.missionListScrollTop,tmpDict))
             return Object.assign({},state,{
                 missionListScrollTop: Object.assign({},state.missionListScrollTop,tmpDict)
             });

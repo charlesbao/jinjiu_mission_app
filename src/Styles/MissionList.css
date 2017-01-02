@@ -73,13 +73,20 @@
     padding-top:10px;
     margin:15px 5px 0 5px;
 }
-.checkButton{
+.checkButton,.checkButton-disabled{
     border:1px solid #6B69CC;
     border-radius:4px;
     box-sizing: border-box;
-    padding:6px 10px;
+    padding:6px 15px;
     color:#6B69CC;
     display: inline-block;
     font-weight: 500;
     margin-right:15px;
+}
+
+.checkButton-disabled{
+    background-color: rgb(229, 229, 229);
+    color: #A1A1A1;
+    font-weight:100;
+    border:1px solid rgb(229, 229, 229);
 }

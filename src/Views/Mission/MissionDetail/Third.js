@@ -35,6 +35,7 @@ const mapState =(state,ownProps)=>{
 const mapDispatch =(dispatch)=>{
     return {
         queryRelatedMissions(missionId,attribute){
+            dispatch({type:ActionType.MISSION_ACTIONS.CLEAR_CURRENT_RELATED_MISSIONS})
             QueryAction.queryRelatedMissions(missionId,attribute,(relatedMissions)=>{
                 dispatch({
                     type:ActionType.MISSION_ACTIONS.QUERY_RELATED_MISSIONS,

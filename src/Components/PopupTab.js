@@ -30,7 +30,9 @@ const labels = {
 const styles = {
     box: {
         width:"100%",
-        height:36
+        height:36,
+        position:"relative",
+        zIndex:99
     },
     floatItem: {
         width:"33%",
