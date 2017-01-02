@@ -9,6 +9,8 @@ import {Box} from '../../Components/FlexBox'
 import ScrollView from '../../Components/ScrollView'
 import ContainerWithBackBar from '../ContainerWithBackBar'
 import LoadingMask from '../../Components/LoadingMask'
+import DeleteAlertDialog from '../../Components/DeleteAlertDialog'
+
 import First from './MissionDetail/First'
 import Second from './MissionDetail/Second'
 import Third from './MissionDetail/Third'
@@ -27,18 +29,17 @@ class MissionDetailSection extends Component {
 
         this.state = {
             loading:false,
+            showDelete:false,
             currentDetail:CONSTANTS.DETAIL_TABS.DETAIL,
             top:185
         }
     }
 
     componentDidMount(){
-        if(!this.props.currentMission.hasOwnProperty('id')){
-            this.context.router.goBack()
-        }
         this.unsubscribe = this.context.store.subscribe(()=>{
             this.setState({
-                loading:false
+                loading:false,
+                showDelete:false
             })
         });
         this.setState({
@@ -55,6 +56,10 @@ class MissionDetailSection extends Component {
         return (
             <ContainerWithBackBar title="任务详情">
                 <LoadingMask show={this.state.loading}/>
+                <DeleteAlertDialog open={this.state.showDelete}
+                                   deleteClose={this.handleDelete.bind(this)}
+                                   close={this.handleClose.bind(this)}
+                                   label="任务已超出三小时未提交，请重新开始任务"/>
                 <Box className="mission-detail--wrapper">
                     <MissionIcon attribute={currentMission['attribute']}/>
                     <MissionHeader missionDetail={currentMission} />
@@ -84,10 +89,25 @@ class MissionDetailSection extends Component {
                 return <Second missionId={currentMission['id']} />
 
             case CONSTANTS.DETAIL_TABS.RECOMMEND:
-                return <Third missionId={currentMission['id']}
+                return <Third attribute={currentMission['attribute']}
+                              missionId={currentMission['id']}
                               onTap={this.linkToOtherMission.bind(this)}/>
 
         }
+    }
+
+    handleClose(){
+        this.setState({
+            showDelete:false,
+        })
+    }
+
+    handleDelete(){
+        const {currentUserMissionId} = this.props;
+        this.props.restartCurrentMission(currentUserMissionId);
+        this.setState({
+            loading:true
+        })
     }
 
     buttonGroupTapHandle(event){
@@ -118,6 +138,11 @@ class MissionDetailSection extends Component {
                 this.props.setCurrentUserMissionId(currentUserMissionId)
                 this.context.router.push(CONSTANTS.ROUTER_PATH.MISSION.MISSION_POST);
                 break;
+            case CONSTANTS.MISSION_CONDITION.ON_DESTROY:
+                this.setState({
+                    showDelete:true
+                })
+
         }
     }
 
@@ -138,6 +163,7 @@ MissionDetailSection.contextTypes = {
 
 MissionDetailSection.propTyes = {
     currentMission:React.PropTypes.object,
+    currentUserMissionId: React.PropTypes.string,
     currentFavour: React.PropTypes.bool,
     currentProcess: React.PropTypes.number
 };
@@ -167,6 +193,14 @@ const mapState = (state)=>{
 
 const mapDispatch = (dispatch)=>{
     return {
+        restartCurrentMission:(currentUserMissionId)=>{
+            PostActions.postRestartCurrentMission(currentUserMissionId,(userMission)=>{
+                dispatch({
+                    type:ACTION_TYPE.USER_ACTIONS.POST_UPDATE_USER_MISSION,
+                    userMission:userMission
+                })
+            })
+        },
         setCurrentUserMissionId:(currentUserMissionId)=>{
             dispatch({
                 type:ACTION_TYPE.USER_ACTIONS.SET_CURRENT_USER_MISSION_ID,

@@ -29,23 +29,37 @@ const MissionList = ({currentIndex,userMissionList,onDelete,onListTap,knowMore,r
         {
             userMissionList.map((item,index)=> {
                 const mission = item['mission'];
-                if (item['process'] != CONSTANTS.MISSION_CONDITION.ON_PREPARE){
-                    if(item['process'] == currentIndex){
-                        return <ListItem key={index}
-                                         theMission={mission}
-                                         process={item['process']}
-                                         commentBack={item['commentBack']}
+                const props = {
+                    theMission:mission,
+                    process:item['process'],
+                    commentBack:item['commentBack'],
 
-                                         knowMore={()=>knowMore(item['commentBack'])}
-                                         comment={()=>comment(item['id'],item['mission'])}
-                                         rePost={()=>rePost(item['id'],item['mission'])}
-                                         onListTap={()=>onListTap(mission)} />
-                    }
+                    knowMore:()=>knowMore(item['commentBack']),
+                    comment:()=>comment(item['id'],item['mission']),
+                    rePost:()=>rePost(item['id'],item['mission']),
+                    onListTap:()=>onListTap(mission)
+                };
+                switch (item['process']){
+                    case CONSTANTS.MISSION_CONDITION.ON_PROGRESS:
+                    case CONSTANTS.MISSION_CONDITION.ON_CHECKING:
+                    case CONSTANTS.MISSION_CONDITION.ON_FINISH:
+                        if(item['process'] == currentIndex){
+                            return <ListItem key={index} {...props}/>
+                        }
+                        break;
+                    case CONSTANTS.MISSION_CONDITION.ON_DESTROY:
+                        if(currentIndex == CONSTANTS.MISSION_CONDITION.ON_FINISH){
+                            return <ListItem key={index} {...props}/>
+                        }
+                        break;
+                    default:
+                        break;
+
                 }
             })
         }
     </div>
-)
+);
 
 const ListItem = ({
     theMission,
@@ -62,7 +76,7 @@ const ListItem = ({
             <div onTouchTap={onListTap}>
                 <MissionIcon attribute={attribute}/>
                 <MissionContent title={title} count={count} publishTime={createdAt} />
-                <MissionFooter price={price} commentBack={commentBack} />
+                <MissionFooter price={price} commentBack={commentBack} process={process} />
             </div>
             <MissionCommentBack knowMore={knowMore}
                                 rePost={rePost}
@@ -113,20 +127,36 @@ const MissionContent = ({title,count,publishTime})=>(
     </div>
 );
 
-const MissionFooter = ({price,commentBack})=> {
+const MissionFooter = ({price,commentBack,process})=> {
+    let comments = [];
+    switch (process){
+        case CONSTANTS.MISSION_CONDITION.ON_CHECKING:
+            if(commentBack != ''){
+                comments = <div className="mission-list-footerWrapper--commentBack">不合格</div>
+            }
+            break;
+        case CONSTANTS.MISSION_CONDITION.ON_DESTROY:
+            comments = <div className="mission-list-footerWrapper--commentBack">已失效</div>
+            break;
+        case CONSTANTS.MISSION_CONDITION.ON_FINISH:
+            comments = <div className="mission-list-footerWrapper--commentBack">已完成</div>
+            break;
+        default:
+            break;
+    }
     return (
-    <div className="mission-list-footerWrapper">
-        <div className="mission-list-footerWrapper--price">{price.toFixed(2)}<span
-            className="mission-list-footerWrapper--label">元</span></div>
-        {commentBack != undefined && <div className="mission-list-footerWrapper--commentBack">不合格</div>}
-    </div>
+        <div className="mission-list-footerWrapper">
+            <div className="mission-list-footerWrapper--price">{price.toFixed(2)}<span
+                className="mission-list-footerWrapper--label">元</span></div>
+            {comments}
+        </div>
     )
 };
 
 const MissionCommentBack = ({process,commentBack,knowMore,rePost,comment})=>{
     switch (process){
         case CONSTANTS.MISSION_CONDITION.ON_CHECKING:
-            if(commentBack != undefined){
+            if(commentBack != ""){
                 return (
                     <div className="mission-list-checkButton">
                         <div className="checkButton" onTouchTap={knowMore}>了解详情</div>

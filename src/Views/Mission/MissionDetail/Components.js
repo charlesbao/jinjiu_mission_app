@@ -28,6 +28,8 @@ export const MissionBottomNavBar = ({isEnd,missionButtonType,hasFavour,favourTap
                 missionLabel = "审核中";
                 disabled = true;
                 break;
+            case CONSTANTS.MISSION_CONDITION.ON_DESTROY:
+                missionLabel = "重置任务";
         }
     }
 

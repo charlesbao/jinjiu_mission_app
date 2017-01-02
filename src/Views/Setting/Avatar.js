@@ -53,7 +53,7 @@ class AvatarSection extends Component {
                             <Avatar
                                 src={this.state.avatar || require('../../assets/avatar.png')}
                                 style={{border:"5px solid white"}}
-                                size={"60%"}
+                                size={100}
                             />
                         </Box>
                         <Box style={{paddingTop:30}}>

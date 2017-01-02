@@ -41,6 +41,7 @@ const updateUserInfo = exports.updateUserInfo = function(currentUser,newData,cal
 const insideQueryMission = function(query,page,callback){
     query.limit(5*page);
     query.descending('updatedAt');
+    query.greaterThanOrEqualTo('dueDate',new Date());
     query.find().then(function (missions) {
         let arr = [];
         missions.map(function(mission){
@@ -95,7 +96,13 @@ const queryUserMissions = exports.queryUserMissions = function(currentUser,callb
                 commentBack: result.get('commentBack'),
                 favor:result.get('favor'),
                 process:result.get('process'),
+                missionCreatedAt: result.get('missionCreatedAt')
             };
+            if(dict['process'] == Constant.MISSION_CONDITION.ON_PROGRESS){
+                if(moment(dict['missionCreatedAt']).isBefore(moment().subtract(3,'h'))){
+                    dict['process'] = Constant.MISSION_CONDITION.ON_DESTROY
+                }
+            }
             arr.push(dict)
         });
         callback(arr)
@@ -184,11 +191,13 @@ const queryComments = exports.queryComments = function(missionId,callback){
     });
 };
 
-const queryRelatedMissions = exports.queryRelatedMissions = function(missionId,callback){
+const queryRelatedMissions = exports.queryRelatedMissions = function(missionId,attribute,callback){
     const query = new AV.Query('mission');
 
     query.limit(5);
     query.notEqualTo('objectId',missionId);
+    query.equalTo('attribute',attribute)
+    query.greaterThanOrEqualTo('dueDate',new Date());
     query.descending('updatedAt');
 
     query.find().then(function(results){
@@ -272,6 +281,17 @@ const postMissionPost = exports.postMissionPost = function(currentUserMissionId,
             queryUserMissions(currentUser, function (result) {
                 callback(result)
             })
+        })
+    })
+};
+
+const postRestartCurrentMission = exports.postRestartCurrentMission = function(currentUserMissionId,currentUser,callback){
+    const userMission = AV.Object.createWithoutData('userMission', currentUserMissionId);
+    userMission.set('missionCreatedAt',new Date())
+    userMission.set('process',Constant.MISSION_CONDITION.ON_PROGRESS)
+    userMission.save().then(function(){
+        queryUserMissions(currentUser, function (result) {
+            callback(result)
         })
     })
 };

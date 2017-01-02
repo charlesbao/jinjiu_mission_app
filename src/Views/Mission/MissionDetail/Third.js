@@ -9,7 +9,7 @@ import QueryAction from '../../../Actions/QueryActions'
 import ActionType from '../../../Constants/ActionType'
 class Third extends Component{
     componentDidMount(){
-        this.props.queryRelatedMissions(this.props.missionId)
+        this.props.queryRelatedMissions(this.props.missionId,this.props.attribute)
     }
     render(){
         const {relatedMissions,onTap} = this.props
@@ -27,14 +27,15 @@ const mapState =(state,ownProps)=>{
     return {
         relatedMissions:state.MissionReducer.relatedMissions,
         missionId:ownProps.missionId,
-        onTap:ownProps.onTap
+        onTap:ownProps.onTap,
+        attribute:ownProps.attribute
     }
 }
 
 const mapDispatch =(dispatch)=>{
     return {
-        queryRelatedMissions(missionId){
-            QueryAction.queryRelatedMissions(missionId,(relatedMissions)=>{
+        queryRelatedMissions(missionId,attribute){
+            QueryAction.queryRelatedMissions(missionId,attribute,(relatedMissions)=>{
                 dispatch({
                     type:ActionType.MISSION_ACTIONS.QUERY_RELATED_MISSIONS,
                     relatedMissions:relatedMissions

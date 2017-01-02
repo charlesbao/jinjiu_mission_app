@@ -28,10 +28,9 @@ class MissionPost extends Component {
     componentDidMount(){
         this.unsubscribe = this.context.store.subscribe(()=>{
             this.setState({
-                loading:false,
-                pics:[],
-                comment:""
+                loading:false
             })
+            this.context.router.goBack()
         })
     }
 

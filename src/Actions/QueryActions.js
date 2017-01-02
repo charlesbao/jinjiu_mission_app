@@ -41,8 +41,8 @@ export default {
         })
     },
 
-    queryRelatedMissions(missionId,callback){
-        WebAPI.queryRelatedMissions(missionId, function(result){
+    queryRelatedMissions(missionId,attribute,callback){
+        WebAPI.queryRelatedMissions(missionId,attribute, function(result){
             callback(result)
         })
     }

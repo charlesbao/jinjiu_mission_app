@@ -12,7 +12,7 @@ const AlertDialog = ({label,close,deleteClose,open})=>(
             primary={true}
             onTouchTap={close}/>,
             <FlatButton
-                label="删除此任务"
+                label="删除并重新开始"
                 secondary={true}
                 onTouchTap={deleteClose}/>]}
         modal={false}

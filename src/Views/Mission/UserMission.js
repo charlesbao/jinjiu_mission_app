@@ -72,7 +72,6 @@ class MissionSection extends Component {
             knowMore: this.onKnowMoreHandle.bind(this),
             rePost: this.onRePostHandle.bind(this)
         };
-        console.log(this.props.userMissionArray)
 
         return (
             <ContainerWithBackBar title="我的任务">
@@ -90,7 +89,7 @@ class MissionSection extends Component {
                       inkBarStyle={styles.inkBarStyle}>
                     <Tab label="进行中" value={CONSTANTS.MISSION_CONDITION.ON_PROGRESS} style={styles.tabStyle} />
                     <Tab label="审核中" value={CONSTANTS.MISSION_CONDITION.ON_CHECKING} style={styles.tabStyle} />
-                    <Tab label="已完成" value={CONSTANTS.MISSION_CONDITION.ON_FINISH} style={styles.tabStyle} />
+                    <Tab label="已结束" value={CONSTANTS.MISSION_CONDITION.ON_FINISH} style={styles.tabStyle} />
                 </Tabs>
                 <ScrollView style={{top:96}}>
                     <UserMissionList {...props} />

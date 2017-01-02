@@ -14,6 +14,11 @@ export default {
             callback(result)
         })
     },
+    postRestartCurrentMission(currentUserMissionId,callback){
+        WebAPI.postRestartCurrentMission(currentUserMissionId,AV.User.current(),function(result){
+            callback(result)
+        })
+    },
 
     postMissionPost(currentUserMissionId,currentMissionId,pics,comment,callback){
         WebAPI.postMissionPost(currentUserMissionId,currentMissionId,AV.User.current(),pics,comment,function(result){

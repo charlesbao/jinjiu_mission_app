@@ -39,6 +39,7 @@ class Comment extends Component {
     }
     render() {
         return (
+
             <ContainerWithBackBar title="评论">
                 <LoadingMask show={this.state.loading}/>
                 <div className="mission-comment-first--title">
@@ -60,8 +61,8 @@ class Comment extends Component {
                         value={this.state.comment}
                         onChange={this.handleChange.bind(this,'comment')}
                         multiLine={true}
-                        rows={2}
-                        rowsMax={2}/>
+                        rows={3}
+                        rowsMax={3}/>
                     <RaisedButton label="提交评论"
                                   style={{marginTop:15}}
                                   secondary={true}
