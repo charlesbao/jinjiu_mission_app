@@ -32,9 +32,9 @@ class ScrollView extends Component {
         const wrapper = document.getElementById(this.wrapperId);
         const scroller = document.getElementById(this.scrollerId);
 
-        scroller.style.height = "auto";
-        if(scroller.offsetHeight < wrapper.offsetHeight){
-            scroller.style.height = wrapper.offsetHeight+10 + 'px'
+        scroller.style.width = this.props.scrollWidth;
+        if(scroller.offsetWidth < wrapper.offsetWidth){
+            scroller.style.width = wrapper.offsetWidth+10 + 'px'
         }
 
         this.myScroll = new window.IScroll(wrapper, {
@@ -42,6 +42,8 @@ class ScrollView extends Component {
             scrollbars: this.props.scrollbarShow,
             click:false,
             bounce:true,
+            scrollX:true,
+            scrollY:false,
             fadeScrollbars:this.props.scrollbarShow
         });
     }
@@ -49,10 +51,10 @@ class ScrollView extends Component {
     render(){
         return (
             <div id={this.wrapperId}
-                 className="iScroll-wrapper"
+                 className="iScroll-wrapperX"
                  style={this.props.style}>
                 <div id={this.scrollerId}
-                     className="iScroll-scroller">
+                     className="iScroll-scrollerX">
                     <div>{ this.props.children }</div>
                 </div>
             </div>
@@ -60,7 +62,8 @@ class ScrollView extends Component {
     }
 }
 ScrollView.defaultProps = {
-    scrollbarShow: false
+    scrollbarShow: false,
+    scrollWidth:'auto'
 }
 
 export default ScrollView

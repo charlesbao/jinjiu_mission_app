@@ -168,7 +168,6 @@ const MissionCommentBack = ({process,commentBack,hasComment,knowMore,rePost,comm
             }
             break;
         case CONSTANTS.MISSION_CONDITION.ON_FINISH:
-            console.log(hasComment)
             return (
                 <div className="mission-list-checkButton">
                     {

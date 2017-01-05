@@ -7,13 +7,13 @@ import CONSTANTS from '../Constants'
 
 const IconFlatButtonGroup = ({onTap})=>(
     <Box style={{margin:"10px 0"}}>
-        <IconFlatButton label="钱包" iconClassName="ion-card"
+        <IconFlatButton label="钱包" iconClassName="ion-android-drafts"
                         onTap={()=>onTap(CONSTANTS.ROUTER_PATH.USER.WALLET)}/>
-        <IconFlatButton label="任务收藏" iconClassName="ion-heart"
+        <IconFlatButton label="任务收藏" iconClassName="ion-android-favorite"
                         onTap={()=>onTap(CONSTANTS.ROUTER_PATH.USER.FAVOUR)}/>
-        <IconFlatButton label="设置" iconClassName="ion-gear-a"
+        <IconFlatButton label="设置" iconClassName="ion-android-settings"
                         onTap={()=>onTap(CONSTANTS.ROUTER_PATH.USER.SETTING)}/>
-        <IconFlatButton label="帮助与反馈" iconClassName="ion-help-circled"
+        <IconFlatButton label="帮助与反馈" iconClassName="ion-android-alert"
                         onTap={()=>onTap(CONSTANTS.ROUTER_PATH.USER.SUPPORT)}/>
     </Box>
 );

@@ -2,6 +2,7 @@
  * Created by chalresbao on 16/11/24.
  */
 import React, { Component } from 'react';
+import { createSelector } from 'reselect';
 import {connect} from 'react-redux';
 import MuiThemeProvider from 'material-ui/styles/MuiThemeProvider';
 import BaseTheme from 'material-ui/styles/baseThemes/lightBaseTheme';
@@ -10,10 +11,9 @@ import CSSTransitionGroup from 'react-addons-css-transition-group';
 
 import Toast from '../Components/Toast'
 import Login from '../Views/Login'
-
-import QueryAction from '../Actions/QueryActions'
+import Dispatcher from '../Models/Dispatcher'
 import CONSTANTS from '../Constants'
-import ActionType from '../Constants/ActionType'
+import {queryUserMissions} from '../Models/Actions/UserActions'
 
 class Container extends Component {
 
@@ -39,7 +39,9 @@ class Container extends Component {
     }
 
     componentDidMount(){
-        if(this.props.user !== null)this.props.queryUserMission();
+        if(this.props.user !== null){
+            this.props.actions.queryUserMissions();
+        }
         document.addEventListener("backbutton", this.backbutton.bind(this), false);
     }
 
@@ -84,25 +86,11 @@ Container.contextTypes = {
     router: React.PropTypes.object
 };
 
-
-const mapState = (state)=>{
-    return {
-        user:state.UserReducer.user
-    }
-}
-
-const mapDispatch = (dispatch)=>{
-    return {
-        queryUserMission:()=>{
-            QueryAction.queryUserMission((result)=>{
-                dispatch({
-                    type:ActionType.USER_ACTIONS.QUERY_USER_MISSION,
-                    userMission:result
-                })
-            })
-
-        }
-    }
-}
-
-export default connect(mapState,mapDispatch)(Container);
+export default connect(createSelector(
+    state => state.UserReducer.user,
+    user => ({
+        user
+    })
+),Dispatcher({
+    queryUserMissions
+}))(Container);

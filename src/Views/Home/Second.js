@@ -9,7 +9,10 @@ import MissionButtonGroup from '../../Components/MissionButtonGroup'
 import IconLargeFlatButtonGroup from '../../Components/IconLargeFlatButtonGroup'
 import ScrollView from '../../Components/ScrollView'
 import CONSTANT from '../../Constants'
-import ActionType from '../../Constants/ActionType'
+
+import Dispatcher from '../../Models/Dispatcher'
+import {setCurrentUserMissionIndex} from '../../Models/Actions/StateActions'
+
 class Second extends Component {
 
     shouldComponentUpdate(){
@@ -17,10 +20,11 @@ class Second extends Component {
     }
 
     render(){
+        const avatar = this.props.user.get('avatar') ? this.props.user.get('avatar').get('url') : null;
         return (
             <Wrapper>
                 <ScrollView style={{bottom:56}}>
-                    <AvatarNickNameGroup avatar={this.props.user.get('avatar')}
+                    <AvatarNickNameGroup avatar={avatar}
                                          avatarTap={()=>this.context.router.push(CONSTANT.ROUTER_PATH.SETTING.SETTING_AVATAR)}
                                          nickname={this.props.user.get('nickname')}
                                          nicknameTap={()=>this.context.router.push(CONSTANT.ROUTER_PATH.SETTING.SETTING_NICKNAME)}/>
@@ -32,7 +36,7 @@ class Second extends Component {
     }
 
     linkToUserMission(route){
-        this.props.setCurrentUserMissionIndex(route)
+        this.props.actions.setCurrentUserMissionIndex(route);
         this.context.router.push(CONSTANT.ROUTER_PATH.MISSION.USER_MISSION);
     }
     linkToUserInfo(route){
@@ -45,27 +49,9 @@ Second.contextTypes = {
     router: React.PropTypes.object
 };
 
-Second.propTypes = {
-    user: React.PropTypes.object,
-    currentUserMissionIndex: React.PropTypes.number
-}
-
-const mapState = (state)=>{
-    return {
-        user:state.UserReducer.user,
-        currentUserMissionIndex: state.StateReducer.currentUserMissionIndex
-    }
-}
-
-const mapDispatch = (dispatch)=>{
-    return {
-        setCurrentUserMissionIndex:(route)=>{
-            dispatch({
-                type:ActionType.STATE_ACTIONS.SET_CURRENT_USER_MISSION_INDEX,
-                data:route
-            })
-        }
-    }
-}
-
-export default connect(mapState,mapDispatch)(Second);
+export default connect((state)=>({
+    user:state.UserReducer.user,
+    currentUserMissionIndex: state.StateReducer.currentUserMissionIndex
+}),Dispatcher({
+    setCurrentUserMissionIndex
+}))(Second);

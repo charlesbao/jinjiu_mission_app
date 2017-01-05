@@ -85,18 +85,36 @@ html,body,#root {
 .blue{
   color: rgb(0, 188, 212);
 }
-.loading{
+.loading-mask{
   position: fixed;
   z-index: 999999;
   width: 100%;
   height:100%;
   top:0;
   left:0;
-  background: rgba(0,0,0,0.5);
-  color: #ffffff;
+  background: rgba(255,255,255,0.75);
+  display: table;
+  text-align: center;
+  opacity: 0;
+  animation: fadeIn 1s linear .5s;
+  -webkit-animation: fadeIn 1s linear .5s;
+  animation-fill-mode:forwards;
+  -webkit-animation-fill-mode:forwards;
+}
+.loading{
+  vertical-align: middle;
+  display: table-cell;
+  text-align: center;
+}
+.ion-ios-ionic-outline{
+  display: block;
+  font-size: 45px;
+  line-height:45px;
+  animation: rotate 2s linear infinite;
+  -webkit-animation: rotate 2s linear infinite;
 }
 
-#iScroll-wrapper{
+#iScroll-wrapper,.iScroll-wrapper{
   position: absolute;
   top: 0;
   bottom: 0;
@@ -109,7 +127,13 @@ html,body,#root {
   transition: padding-top .5s;
 }
 
-#iScroll-scroller {
+.iScroll-wrapperX{
+  position: relative;
+  overflow: hidden;
+  box-sizing: border-box;
+}
+
+.iScroll-scroller,.iScroll-scrollerX {
   position: absolute;
   width: 100%;
 
@@ -121,6 +145,9 @@ html,body,#root {
   user-select: none;
   -webkit-text-size-adjust: none;
   text-size-adjust: none;
+}
+.iScroll-scrollerX{
+  width: auto;
 }
 
 #iScroll-pullDown{
@@ -140,6 +167,10 @@ html,body,#root {
   padding-bottom: 10px;
   color: gray;
   margin-top:10px;
+}
+.iScrollIndicator{
+  background: rgba(0,0,0,0.4)!important;
+  border-radius:10px!important;
 }
 
 .ion-arrow-up-a,.ion-android-refresh{
@@ -166,5 +197,22 @@ html,body,#root {
   }
   100%{
     -webkit-transform:rotate(360deg);
+  }
+}
+
+@keyframes fadeIn {
+  0%{
+    opacity: 0;
+  }
+  100%{
+    opacity: 1;
+  }
+}
+@-webkit-keyframes fadeIn {
+  0%{
+    opacity: 0;
+  }
+  100%{
+    opacity: 1;
   }
 }

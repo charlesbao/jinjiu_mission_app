@@ -2,14 +2,15 @@
  * Created by chalresbao on 16/12/23.
  */
 import React from 'react'
-import {Box} from './FlexBox'
 
 const LoadingMask = ({show})=>{
     if(show){
         return (
-            <Box className="loading">
-                Loading
-            </Box>
+            <div className="loading-mask">
+                <div className="loading">
+                    <i className="ion-ios-ionic-outline" />
+                </div>
+            </div>
         )
     }else{
         return <div></div>

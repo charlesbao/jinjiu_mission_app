@@ -14,7 +14,8 @@ const AlertDialog = ({label,close,deleteClose,open})=>(
             <FlatButton
                 label="删除并重新开始"
                 secondary={true}
-                onTouchTap={deleteClose}/>]}
+                onTouchTap={deleteClose}/>
+        ]}
         modal={false}
         open={open}
         onRequestClose={close}>

@@ -3,7 +3,7 @@ import Constant from '../Constants'
 const AV = require("leancloud-storage");
 const moment = require('moment');
 //用户登录
-const userLogin = exports.userLogin = function(username,password,callback){
+const postUserLogin = exports.postUserLogin = function(username,password,callback){
     AV.User.logIn(username, password).then(function (currentUser) {
         callback(currentUser)
     },function (error) {
@@ -12,7 +12,7 @@ const userLogin = exports.userLogin = function(username,password,callback){
 };
 
 //创建用户
-const userRegister = exports.userRegister = function(username,password,callback){
+const postUserRegister = exports.postUserRegister = function(username,password,callback){
     const user = new AV.User();
     user.setUsername(username);
     user.setPassword(password);
@@ -27,7 +27,8 @@ const userRegister = exports.userRegister = function(username,password,callback)
     });
 };
 
-const updateUserInfo = exports.updateUserInfo = function(currentUser,newData,callback){
+const postUpdateUser = exports.postUpdateUser = function(newData,callback){
+    const currentUser = AV.User.current()
     for(let key in newData){
         currentUser.set(key,newData[key])
     }
@@ -39,7 +40,7 @@ const updateUserInfo = exports.updateUserInfo = function(currentUser,newData,cal
 }
 
 const insideQueryMission = function(query,page,callback){
-    query.limit(5*page);
+    query.limit(10*page);
     query.descending('updatedAt');
     query.greaterThanOrEqualTo('dueDate',new Date());
     query.find().then(function (missions) {
@@ -82,7 +83,8 @@ const queryMissionsByAttribute = exports.queryMissionsByAttribute = function(pag
 }
 
 
-const queryUserMissions = exports.queryUserMissions = function(currentUser,callback){
+const queryUserMissions = exports.queryUserMissions = function(callback){
+    const currentUser = AV.User.current();
     const query = new AV.Query('userMission');
     query.equalTo('user',currentUser);
     query.addAscending('process');
@@ -115,16 +117,27 @@ const queryUserMissions = exports.queryUserMissions = function(currentUser,callb
     })
 }
 
-const queryMissionById = exports.queryMissionById = function(missionId,callback){
-    const query = new AV.Query('mission');
-    query.get(missionId).then(function (mission) {
-        console.log(mission)
-
-        callback(getMissionDict(mission))
-    });
+const queryMissionBySearch = exports.queryMissionBySearch = function(searchValue,callback) {
+    const titleQuery = new AV.Query('mission');
+    titleQuery.contains('title', searchValue);
+    const instructionQuery = new AV.Query('mission');
+    instructionQuery.contains('instruction', searchValue);
+    const query = AV.Query.or(titleQuery, instructionQuery);
+    query.addDescending('createdAt');
+    query.limit(50);
+    query.greaterThanOrEqualTo('dueDate',new Date());
+    query.find().then(function (results) {
+        let arr = [];
+        results.map(function(mission){
+            arr.push(getMissionDict(mission))
+        });
+        callback(arr)
+    },function(){
+        callback(null)
+    })
 }
 
-const requestVerifyNumber = exports.requestVerifyNumber = function(mobilePhoneNumber,callback){
+const postRequestVerifyNumber = exports.postRequestVerifyNumber = function(mobilePhoneNumber,callback){
     AV.Cloud.requestSmsCode({
         mobilePhoneNumber: mobilePhoneNumber,
         name: '绑定手机号码',
@@ -136,7 +149,7 @@ const requestVerifyNumber = exports.requestVerifyNumber = function(mobilePhoneNu
     });
 };
 
-const verifySmsNumber = exports.verifySmsNumber = function(smsNumber,mobilePhoneNumber,callback){
+const postVerifySmsNumber = exports.postVerifySmsNumber = function(smsNumber,mobilePhoneNumber,callback){
     AV.Cloud.verifySmsCode(smsNumber, mobilePhoneNumber).then(function(){
         callback(true)
     }, function(err){
@@ -144,7 +157,9 @@ const verifySmsNumber = exports.verifySmsNumber = function(smsNumber,mobilePhone
     });
 };
 
-const createComment = exports.createComment = function (currentUser,userMissionId, missionId, content,callback) {
+const postMissionComment = exports.postMissionComment = function (userMissionId, missionId, content,callback) {
+    const currentUser = AV.User.current()
+
     const missionComment = new AV.Object("missionComment");
     const mission = AV.Object.createWithoutData('mission', missionId);
     missionComment.set('user',currentUser);
@@ -154,7 +169,7 @@ const createComment = exports.createComment = function (currentUser,userMissionI
         const userMission = AV.Object.createWithoutData('userMission', userMissionId);
         userMission.set('hasComment',true);
         userMission.save().then(function(){
-            queryUserMissions(currentUser,function(result){
+            queryUserMissions(function(result){
                 callback(result)
             })
         });
@@ -163,7 +178,7 @@ const createComment = exports.createComment = function (currentUser,userMissionI
     })
 };
 
-const queryComments = exports.queryComments = function(missionId,callback){
+const queryCurrentMissionComments = exports.queryCurrentMissionComments = function(missionId,callback){
     const mission = AV.Object.createWithoutData('mission', missionId);
     const query = new AV.Query('missionComment');
     query.equalTo('targetMission', mission);
@@ -209,7 +224,8 @@ const queryRelatedMissions = exports.queryRelatedMissions = function(missionId,a
 };
 
 //添加userMission
-const createOrUpdateUserMission = exports.createOrUpdateUserMission = function(userMissionId,currentUser,missionId,favour,process,startMission,callback){
+const createOrUpdateUserMission = exports.createOrUpdateUserMission = function(userMissionId,missionId,favour,process,startMission,callback){
+    const currentUser = AV.User.current()
 
     function insideCreateUpdateMission(userMission,callback){
         //如果没有存在的mission，则创建
@@ -224,7 +240,7 @@ const createOrUpdateUserMission = exports.createOrUpdateUserMission = function(u
             userMission.set('favorCreatedAt',new Date())
         }
         userMission.save().then(function(){
-            queryUserMissions(currentUser,function(result){
+            queryUserMissions(function(result){
                 callback(result)
             })
         },function(error){
@@ -237,7 +253,7 @@ const createOrUpdateUserMission = exports.createOrUpdateUserMission = function(u
         if(process == 0 && favour == false){
             // 如果收藏、进度都为初始值，则删除此条记录
             userMission.destroy().then(function(){
-                queryUserMissions(currentUser,function(result){
+                queryUserMissions(function(result){
                     callback(result)
                 })
             })
@@ -254,45 +270,103 @@ const createOrUpdateUserMission = exports.createOrUpdateUserMission = function(u
     }
 };
 
-const postUserRemoveDestroyMission = exports.postUserRemoveDestroyMission = function(userMissionId,currentUser,callback){
+const postUserRemoveDestroyMission = exports.postUserRemoveDestroyMission = function(userMissionId,callback){
     const userMission = AV.Object.createWithoutData('userMission', userMissionId);
     userMission.destroy().then(function(){
-        queryUserMissions(currentUser,function(result){
+        queryUserMissions(function(result){
             callback(result)
         })
     })
 }
 
-const postMissionPost = exports.postMissionPost = function(currentUserMissionId,currentMissionId,currentUser,pics,comment,callback){
+const postMissionPost = exports.postMissionPost = function(currentUserMissionId,currentMissionId,pics,comment,callback){
+
+    function insideMissionPost(){
+        missionPost.set('userMission',userMission);
+        missionPost.set('mission',mission);
+        missionPost.set('user',currentUser);
+        missionPost.set('comment',comment);
+
+        missionPost.save().then(function() {
+            userMission.set('process',Constant.MISSION_CONDITION.ON_CHECKING);
+            userMission.set('commentBack',"");
+            userMission.save().then(function() {
+                queryUserMissions(function (result) {
+                    callback(result)
+                })
+            },function(){
+                callback(null)
+            })
+        },function(){
+            callback(null)
+        })
+
+    }
+
     const missionPost = AV.Object('missionPost')
     const userMission = AV.Object.createWithoutData('userMission', currentUserMissionId);
     const mission = AV.Object.createWithoutData('mission', currentMissionId);
-    missionPost.set('userMission',userMission);
-    missionPost.set('mission',mission);
-    missionPost.set('user',currentUser);
-    missionPost.set('comment',comment);
-    missionPost.set('pics',pics);
+    const currentUser = AV.User.current();
+    let fileArr = [];
 
-    missionPost.save().then(function() {
-        userMission.set('process',Constant.MISSION_CONDITION.ON_CHECKING);
-        userMission.set('commentBack',"");
-        userMission.save().then(function() {
-            queryUserMissions(currentUser, function (result) {
-                callback(result)
-            })
-        })
-    })
+    if(pics.length === 0){
+        insideMissionPost()
+    }else{
+        pics.map(function(item,i){
+            const file = new AV.File(currentUserMissionId+"_"+item.name, item);
+            file.save().then(function(result){
+                fileArr.push(result)
+                if(fileArr.length === pics.length){
+                    missionPost.set('pics',fileArr);
+                    insideMissionPost()
+                }
+            });
+        });
+    }
 };
 
-const postRestartCurrentMission = exports.postRestartCurrentMission = function(currentUserMissionId,currentUser,callback){
+const postRestartCurrentMission = exports.postRestartCurrentMission = function(currentUserMissionId,callback){
     const userMission = AV.Object.createWithoutData('userMission', currentUserMissionId);
     userMission.set('missionCreatedAt',new Date())
     userMission.set('process',Constant.MISSION_CONDITION.ON_PROGRESS)
     userMission.save().then(function(){
-        queryUserMissions(currentUser, function (result) {
+        queryUserMissions(function (result) {
             callback(result)
         })
+    },function(){
+        callback(null)
     })
+};
+
+const postUploadAvatar = exports.postUploadAvatar = function(base64File,callback){
+    function insideUploadAvatar(){
+        const avatarName = currentUser.get('username')+'_avatar.png';
+        const data = { base64: base64File };
+        const file = new AV.File(avatarName, data);
+        file.save().then(function(avatar){
+            callback(avatar)
+        },function(){
+            callback(null)
+        })
+    }
+    const currentUser = AV.User.current();
+    if(currentUser.get('avatar')){
+        const {name} = currentUser.get('avatar').attributes;
+        const query = new AV.Query("_File");
+        query.equalTo('name',name);
+        query.first().then(function(file){
+            const oldAvatar = AV.File.createWithoutData(file.id);
+            oldAvatar.destroy().then(function () {
+                insideUploadAvatar()
+            }, function (error) {
+                callback(null)
+            });
+        },function(){
+            callback(null)
+        })
+    }else{
+        insideUploadAvatar()
+    }
 };
 
 const getMissionDict = function(mission){

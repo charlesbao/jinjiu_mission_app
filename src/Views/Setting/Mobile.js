@@ -10,11 +10,12 @@ import ContainerWithBackBar from '../ContainerWithBackBar'
 import TextField from 'material-ui/TextField'
 import RaisedButton from 'material-ui/RaisedButton'
 import FlatButton from 'material-ui/FlatButton'
+import Alert from '../../Components/AlertDialog'
 import LoadingMask from '../../Components/LoadingMask'
 
-import PostAction from '../../Actions/PostActions'
-import Constants from '../../Constants'
-import ActionType from '../../Constants/ActionType'
+import Dispatcher from '../../Models/Dispatcher'
+import {postRequestVerifyNumber,postUpdateUser,postVerifySmsNumber} from '../../Models/Actions/UserActions'
+
 const styles = {
     wrapper: {
         padding: 15
@@ -33,63 +34,19 @@ class MobileSection extends Component {
     constructor(props) {
         super(props)
         this.state = {
+            alert:null,
             loading:false,
             mobilePhoneNumber:"",
             smsNumber:"",
         };
-
-        this.step = 0
-    }
-
-    componentDidMount(){
-        this.unsubscribe = this.context.store.subscribe(()=>{
-            const state = this.context.store.getState()
-            console.log(state.UserReducer.error)
-            switch (state.UserReducer.error){
-                case Constants.ERROR.REQUEST_PHONE_FAILED:
-                    alert('发送错误')
-                    this.setState({
-                        loading:false
-                    })
-                    break;
-                case Constants.ERROR.REQUEST_PHONE_SUCCESS:
-                    alert('发送成功')
-                    this.setState({
-                        loading:false
-                    })
-                    break;
-                case Constants.ERROR.VERIFY_SMS_FAILED:
-                    alert('验证错误')
-                    this.setState({
-                        loading:false
-                    })
-                    break;
-                case Constants.ERROR.VERIFY_SMS_SUCCESS:
-                    alert('验证成功')
-                    this.props.postUpdateUser(this.state.mobilePhoneNumber);
-                    this.setState({
-                        loading:true
-                    });
-                    break;
-                case null:
-                    alert('绑定成功')
-                    this.setState({
-                        loading:false
-                    });
-                    break;
-                default:
-                    break;
-            }
-        })
-    }
-
-    componentWillUnmount(){
-        this.unsubscribe()
     }
 
     render() {
         return (
             <ContainerWithBackBar title="绑定手机号码">
+                <Alert open={this.state.alert !== null}
+                       close={this.handleClose.bind(this)}
+                       content={this.state.alert}/>
                 <LoadingMask show={this.state.loading} />
                 <ScrollView style={{top:45}}>
                     <Box style={styles.wrapper}>
@@ -127,6 +84,11 @@ class MobileSection extends Component {
         )
     }
 
+    handleClose(){
+        if(this.state.alert === "手机绑定成功!")setTimeout(()=>this.context.router.goBack(),500)
+        this.setState({alert:null});
+    }
+
     handleChange(key,evt,newValue){
         let dict = {};
         dict[key] = newValue
@@ -134,60 +96,33 @@ class MobileSection extends Component {
     }
 
     onSendHandle(){
-        this.props.postRequestVerifyNumber(this.state.mobilePhoneNumber)
-        this.setState({
-            loading:true
-        })
+        this.setState({loading:true});
+        this.props.actions.postRequestVerifyNumber(this.state.mobilePhoneNumber,(error)=>{
+            this.setState({loading:false,alert:error})
+        });
     }
 
     onTapHandle(){
-        this.props.postVerifySmsNumber(this.state.smsNumber,this.state.mobilePhoneNumber)
-        this.setState({
-            loading:true
-        })
+        this.setState({loading:true});
+        this.props.actions.postVerifySmsNumber(this.state.smsNumber,this.state.mobilePhoneNumber,(error)=>{
+            if(error === null){
+                this.setState({loading:false,alert:'手机绑定成功!'});
+            }else{
+                this.setState({loading:false,alert:error})
+            }
+        });
     }
 }
 
 MobileSection.contextTypes = {
-    router: React.PropTypes.object,
-    store: React.PropTypes.object
+    router: React.PropTypes.object
 };
 
-
-const mapState = (state)=>{
-    return {
-        user: state.UserReducer.user,
-        requestVerifyNumber: state.UserReducer.requestVerifyNumber
-    }
-};
-
-
-const mapDispatch = (dispatch)=>{
-    return {
-        postRequestVerifyNumber:(mobilePhoneNumber)=>{
-            PostAction.postRequestVerifyNumber(mobilePhoneNumber,function(result){
-                dispatch({
-                    type:ActionType.USER_ACTIONS.POST_REQUEST_VERIFY_NUMBER,
-                    result:result
-                })
-            })
-        },
-        postVerifySmsNumber:(smsNumber,mobilePhoneNumber)=>{
-            PostAction.postVerifySmsNumber(smsNumber,mobilePhoneNumber,(result)=>{
-                dispatch({
-                    type:ActionType.USER_ACTIONS.POST_VERIFY_SMS_NUMBER,
-                    result:result
-                })
-            })
-        },
-        postUpdateUser:(mobilePhoneNumber)=>{
-            PostAction.postUpdateUserInfo({mobilePhoneNumber:mobilePhoneNumber},(currentUser)=>{
-                dispatch({
-                    type:ActionType.USER_ACTIONS.POST_USER_CHANGE_PHONE_NUMBER,
-                    user:currentUser
-                })
-            })
-        }
-    }
-}
-export default connect(mapState,mapDispatch)(MobileSection)
+export default connect((state)=>({
+    user: state.UserReducer.user,
+    requestVerifyNumber: state.UserReducer.requestVerifyNumber
+}),Dispatcher({
+    postRequestVerifyNumber,
+    postUpdateUser,
+    postVerifySmsNumber
+}))(MobileSection)

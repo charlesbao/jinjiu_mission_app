@@ -2,23 +2,29 @@
  * Created by chalresbao on 16/12/6.
  */
 import React, {Component} from 'react'
+import Measure from 'react-measure'
+import {createSelector} from 'reselect'
 import {connect} from 'react-redux'
 import {List, ListItem} from 'material-ui/List';
 
 import {Box} from '../../Components/FlexBox'
 import ScrollView from '../../Components/ScrollView'
 import ContainerWithBackBar from '../ContainerWithBackBar'
+
 import LoadingMask from '../../Components/LoadingMask'
 import DeleteAlertDialog from '../../Components/DeleteAlertDialog'
+import Alert from '../../Components/AlertDialog'
 
 import First from './MissionDetail/First'
 import Second from './MissionDetail/Second'
 import Third from './MissionDetail/Third'
 import { MissionBottomNavBar,MissionHeader,MissionIcon,MissionDetailButtonGroup } from './MissionDetail/Components'
 
-import PostActions from '../../Actions/PostActions'
-import ACTION_TYPE from '../../Constants/ActionType'
 import CONSTANTS from '../../Constants'
+
+import Dispatcher from '../../Models/Dispatcher'
+import { postRestartCurrentMission, postUpdateUserMission, setCurrentUserMissionId } from '../../Models/Actions/UserActions';
+import { queryRelatedMissions, queryCurrentMissionComments, setCurrentMission } from '../../Models/Actions/MissionActions'
 
 import "../../Styles/MissionDetail.css"
 
@@ -28,6 +34,7 @@ class MissionDetailSection extends Component {
         super(props);
 
         this.state = {
+            alert:null,
             loading:false,
             showDelete:false,
             currentDetail:CONSTANTS.DETAIL_TABS.DETAIL,
@@ -36,50 +43,51 @@ class MissionDetailSection extends Component {
     }
 
     componentDidMount(){
-        this.unsubscribe = this.context.store.subscribe(()=>{
-            this.setState({
-                loading:false,
-                showDelete:false
+        this.setState({loading: true});
+        this.props.actions.queryCurrentMissionComments(this.props.currentMission['id'], (error) => {
+            this.setState({alert:error});
+            this.props.actions.queryRelatedMissions(this.props.currentMission['id'],this.props.currentMission['attribute'], (error) => {
+                this.setState({loading: false, alert: error});
             })
-        });
-        this.setState({
-            top:118 + document.getElementById('mission--wrapper').offsetHeight
         })
-    }
 
-    componentWillUnmount(){
-        this.unsubscribe()
     }
 
     render() {
-        const {currentMission,currentProcess,currentFavour} = this.props;
+        const {currentMission,currentProcess,currentFavor} = this.props;
         return (
             <ContainerWithBackBar title="任务详情">
+                <Alert open={this.state.alert !== null}
+                       close={()=>this.setState({alert:null})}
+                       content={this.state.alert}/>
                 <LoadingMask show={this.state.loading}/>
                 <DeleteAlertDialog open={this.state.showDelete}
                                    deleteClose={this.handleDelete.bind(this)}
-                                   close={this.handleClose.bind(this)}
+                                   close={()=>this.setState({showDelete:false})}
                                    label="任务已超出三小时未提交，请重新开始任务"/>
-                <Box className="mission-detail--wrapper">
-                    <MissionIcon attribute={currentMission['attribute']}/>
-                    <MissionHeader missionDetail={currentMission} />
-                </Box>
-                <MissionDetailButtonGroup currentDetail={this.state.currentDetail}
-                                          onTap={this.buttonGroupTapHandle.bind(this)}/>
-
-                <ScrollView style={{top:this.state.top,bottom:55,paddingTop:15}}>{ this.renderView() }</ScrollView>
+                <Measure onMeasure={(dimensions) => this.setState({top:dimensions['bottom']})}>
+                    <div>
+                        <Box className="mission-detail--wrapper">
+                            <MissionIcon attribute={currentMission['attribute']}/>
+                            <MissionHeader missionDetail={currentMission} />
+                        </Box>
+                        <MissionDetailButtonGroup currentDetail={this.state.currentDetail}
+                                                  onTap={this.buttonGroupTapHandle.bind(this)}/>
+                    </div>
+                </Measure>
+                <ScrollView scrollbarShow={true} style={{top:this.state.top,bottom:55,paddingTop:15}}>{ this.renderView() }</ScrollView>
 
                 <MissionBottomNavBar canBeRepeat={currentMission['canBeRepeat']}
                                      isEnd={currentMission['isEnd']}
                                      missionButtonType={currentProcess}
-                                     hasFavour={currentFavour}
+                                     hasFavour={currentFavor}
                                      favourTap={this.favourTapHandle.bind(this)}
                                      missionTap={this.missionTapHandle.bind(this)} />
             </ContainerWithBackBar>
         )
     }
     renderView(){
-        const {currentMission} = this.props;
+        const {currentMission,currentMissionComments,relatedMissions} = this.props;
         switch (this.state.currentDetail){
             case CONSTANTS.DETAIL_TABS.DETAIL:
             default:
@@ -87,142 +95,104 @@ class MissionDetailSection extends Component {
                               tutorial={currentMission['tutorial']} />;
 
             case CONSTANTS.DETAIL_TABS.EVALUATE:
-                return <Second missionId={currentMission['id']} />
+                return <Second list={currentMissionComments}/>
 
             case CONSTANTS.DETAIL_TABS.RECOMMEND:
-                return <Third attribute={currentMission['attribute']}
-                              missionId={currentMission['id']}
+                return <Third list={relatedMissions}
                               onTap={this.linkToOtherMission.bind(this)}/>
 
         }
     }
 
-    handleClose(){
-        this.setState({
-            showDelete:false,
-        })
-    }
-
     handleDelete(){
+        this.setState({loading:true});
         const {currentUserMissionId} = this.props;
-        this.props.restartCurrentMission(currentUserMissionId);
-        this.setState({
-            loading:true
-        })
+        this.props.actions.postRestartCurrentMission(currentUserMissionId,(error)=>{
+            this.setState({loading:false, showDelete:false, alert:error});
+        });
     }
 
     buttonGroupTapHandle(event){
-        if(this.state.currentDetail !== event)
-            this.setState({
-                currentDetail:event
-            })
+        if(this.state.currentDetail !== event) this.setState({currentDetail:event})
     }
 
     favourTapHandle(){
-        const {currentMission,currentUserMissionId,currentFavour,currentProcess} = this.props;
-        this.props.postUpdateUserMission(currentUserMissionId,currentMission['id'],!currentFavour,currentProcess,false);
-        this.setState({
-            loading:true
+        this.setState({loading:true});
+        const {currentMission,currentUserMissionId,currentFavor,currentProcess} = this.props;
+        this.props.actions.postUpdateUserMission(currentUserMissionId,currentMission['id'],!currentFavor,currentProcess,false,(error)=>{
+            this.setState({loading:false, alert:error});
         });
     }
     missionTapHandle(){
-        const {currentMission,currentUserMissionId,currentFavour,currentProcess} = this.props;
+        const {currentMission,currentUserMissionId,currentFavor,currentProcess} = this.props;
         switch (currentProcess){
             case CONSTANTS.MISSION_CONDITION.ON_PREPARE:
             default:
-                this.props.postUpdateUserMission(currentUserMissionId,currentMission['id'],currentFavour,CONSTANTS.MISSION_CONDITION.ON_PROGRESS,true);
-                this.setState({
-                    loading:true
+                this.setState({loading:true});
+                this.props.actions.postUpdateUserMission(currentUserMissionId,currentMission['id'],currentFavor,CONSTANTS.MISSION_CONDITION.ON_PROGRESS,true,(error)=>{
+                    this.setState({loading:false, alert:error})
                 });
                 break;
             case CONSTANTS.MISSION_CONDITION.ON_PROGRESS:
-                this.props.setCurrentUserMissionId(currentUserMissionId)
+                this.props.actions.setCurrentUserMissionId(currentUserMissionId)
                 this.context.router.push(CONSTANTS.ROUTER_PATH.MISSION.MISSION_POST);
                 break;
             case CONSTANTS.MISSION_CONDITION.ON_DESTROY:
-                this.setState({
-                    showDelete:true
-                })
-
+                this.setState({showDelete:true});
+                break;
         }
     }
 
     linkToOtherMission(currentMission){
         setTimeout(()=>{
-            this.setState({
-                currentDetail:CONSTANTS.DETAIL_TABS.DETAIL
-            });
-            this.props.setCurrentMission(currentMission)
+            this.setState({currentDetail:CONSTANTS.DETAIL_TABS.DETAIL});
+            this.props.actions.setCurrentMission(currentMission)
         },200)
     }
 }
 
 MissionDetailSection.contextTypes = {
-    router: React.PropTypes.object,
-    store: React.PropTypes.object
+    router: React.PropTypes.object
 };
 
 MissionDetailSection.propTyes = {
     currentMission:React.PropTypes.object,
     currentUserMissionId: React.PropTypes.string,
-    currentFavour: React.PropTypes.bool,
+    currentFavor: React.PropTypes.bool,
     currentProcess: React.PropTypes.number
 };
 
-const mapState = (state)=>{
-    const currentMission = state.MissionReducer.currentMission;
-    const userMission = state.UserReducer.userMission;
-
-    let userMissionId = null;
-    let favour = false;
-    let process = 0;
-    for(let i in userMission){
-        if(userMission[i]['mission']['id'] == currentMission['id']){
-            userMissionId = userMission[i]['id']
-            favour = userMission[i]['favor']
-            process = userMission[i]['process']
-            break;
+export default connect(createSelector(
+    state => state.MissionReducer.currentMissionComments,
+    state => state.MissionReducer.relatedMissions,
+    state => state.MissionReducer.currentMission,
+    state => state.UserReducer.userMission,
+    (currentMissionComments,relatedMissions,currentMission,userMission) => {
+        let userMissionId = null;
+        let favor = false;
+        let process = 0;
+        for(let i in userMission){
+            if(userMission[i]['mission']['id'] == currentMission['id']){
+                userMissionId = userMission[i]['id']
+                favor = userMission[i]['favor']
+                process = userMission[i]['process']
+                break;
+            }
+        }
+        return {
+            currentMissionComments: currentMissionComments,
+            relatedMissions: relatedMissions,
+            currentMission:currentMission,
+            currentUserMissionId:userMissionId,
+            currentFavor:favor,
+            currentProcess:process
         }
     }
-    return {
-        currentMission:currentMission,
-        currentUserMissionId:userMissionId,
-        currentFavour:favour,
-        currentProcess:process
-    }
-}
-
-const mapDispatch = (dispatch)=>{
-    return {
-        restartCurrentMission:(currentUserMissionId)=>{
-            PostActions.postRestartCurrentMission(currentUserMissionId,(userMission)=>{
-                dispatch({
-                    type:ACTION_TYPE.USER_ACTIONS.POST_UPDATE_USER_MISSION,
-                    userMission:userMission
-                })
-            })
-        },
-        setCurrentUserMissionId:(currentUserMissionId)=>{
-            dispatch({
-                type:ACTION_TYPE.USER_ACTIONS.SET_CURRENT_USER_MISSION_ID,
-                currentUserMissionId:currentUserMissionId
-            })
-        },
-        setCurrentMission:(currentMission)=>{
-            dispatch({
-                type:ACTION_TYPE.MISSION_ACTIONS.SET_CURRENT_MISSION,
-                currentMission:currentMission
-            })
-        },
-        postUpdateUserMission:(userMissionId,missionId,favour,process,startMission)=>{
-            PostActions.postUpdateUserMission(userMissionId,missionId,favour,process,startMission,(userMission)=>{
-                dispatch({
-                    type:ACTION_TYPE.USER_ACTIONS.POST_UPDATE_USER_MISSION,
-                    userMission:userMission
-                })
-            })
-        }
-    }
-}
-
-export default connect(mapState,mapDispatch)(MissionDetailSection)
+),Dispatcher({
+    postRestartCurrentMission,
+    postUpdateUserMission,
+    setCurrentUserMissionId,
+    setCurrentMission,
+    queryCurrentMissionComments,
+    queryRelatedMissions
+}))(MissionDetailSection)

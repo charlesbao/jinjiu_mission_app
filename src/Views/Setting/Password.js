@@ -6,13 +6,14 @@ import {connect} from 'react-redux'
 import {Box} from '../../Components/FlexBox'
 import TextField from 'material-ui/TextField'
 import RaisedButton from 'material-ui/RaisedButton'
+import Alert from '../../Components/AlertDialog'
 import LoadingMask from '../../Components/LoadingMask'
 import ScrollView from '../../Components/ScrollView'
 import ContainerWithBackBar from '../ContainerWithBackBar'
 
-import PostAction from '../../Actions/PostActions'
-import Constants from '../../Constants'
-import ActionType from '../../Constants/ActionType'
+import Dispatcher from '../../Models/Dispatcher'
+import {postUpdatePassword} from '../../Models/Actions/UserActions'
+
 const styles = {
     wrapper: {
         padding: 15
@@ -26,6 +27,7 @@ class PasswordSection extends Component {
     constructor(props) {
         super(props)
         this.state = {
+            alert:null,
             loading:false,
             password:"",
             newPassword:"",
@@ -34,26 +36,12 @@ class PasswordSection extends Component {
 
     }
 
-    componentDidMount(){
-        this.unsubscribe = this.context.store.subscribe(()=>{
-            const state = this.context.store.getState()
-            console.log(state.UserReducer.error)
-            if(state.UserReducer.error == Constants.ERROR.UPDATE_USER_INFO_FAILED){
-                alert('密码错误')
-            }
-            this.setState({
-                loading:false
-            })
-        })
-    }
-
-    componentWillUnmount(){
-        this.unsubscribe()
-    }
-
     render() {
         return (
             <ContainerWithBackBar title="账户密码">
+                <Alert open={this.state.alert !== null}
+                       close={this.handleClose.bind(this)}
+                       content={this.state.alert}/>
                 <LoadingMask show={this.state.loading} />
                 <ScrollView style={{top:45}}>
                     <Box style={styles.wrapper}>
@@ -93,6 +81,11 @@ class PasswordSection extends Component {
         )
     }
 
+    handleClose(){
+        if(this.state.alert === "密码修改成功!")setTimeout(()=>this.context.router.goBack(),500)
+        this.setState({alert:null});
+    }
+
     handleChange(key,evt,newValue){
         let dict = {};
         dict[key] = newValue
@@ -100,10 +93,19 @@ class PasswordSection extends Component {
     }
 
     onTapHandle(){
-        this.props.postUpdateUser(this.props.user.get('username'),this.state.password,this.state.newPassword)
-        this.setState({
-            loading:true
-        })
+        this.setState({loading:true})
+        this.props.actions.postUpdatePassword(
+            this.props.user.get('username'),
+            this.state.password,
+            this.state.newPassword,
+            this.state.re_newPassword,(error)=>{
+                if(error === null){
+                    this.setState({loading:false, alert:'密码修改成功!'});
+                }else{
+                    this.setState({loading:false, alert:error})
+                }
+            }
+        )
     }
 }
 
@@ -112,23 +114,8 @@ PasswordSection.contextTypes = {
     store: React.PropTypes.object
 };
 
-const mapState = (state)=>{
-    return {
-        user: state.UserReducer.user
-    }
-};
-
-
-const mapDispatch = (dispatch)=>{
-    return {
-        postUpdateUser:(username,password,newPassword)=>{
-            PostAction.postUpdatePassword(username,password,newPassword,(currentUser)=>{
-                dispatch({
-                    type:ActionType.USER_ACTIONS.POST_UPDATE_USER_INFO,
-                    user:currentUser
-                })
-            })
-        }
-    }
-}
-export default connect(mapState,mapDispatch)(PasswordSection)
+export default connect((state)=>({
+    user:state.UserReducer.user
+}),Dispatcher({
+    postUpdatePassword
+}))(PasswordSection)

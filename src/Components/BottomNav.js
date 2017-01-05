@@ -4,8 +4,8 @@ import FlatButton from 'material-ui/FlatButton'
 import {BottomNavigation, BottomNavigationItem} from 'material-ui/BottomNavigation';
 import Paper from 'material-ui/Paper';
 
-const recentsIcon = <FontIcon className="ion-clipboard"/>;
-const favoritesIcon = <FontIcon className="ion-happy-outline"/>;
+const recentsIcon = <FontIcon className="ion-android-document"/>;
+const favoritesIcon = <FontIcon className="ion-android-person"/>;
 
 class BottomNav extends Component {
 

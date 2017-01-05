@@ -3,19 +3,18 @@
  */
 import React,{Component} from 'react';
 import {connect} from 'react-redux'
+import {createSelector} from 'reselect'
 import {Tabs, Tab} from 'material-ui/Tabs';
-
-import DeleteAlertDialog from '../../Components/DeleteAlertDialog'
-import AlertDialog from '../../Components/AlertDialog'
-
-import LoadingMask from '../../Components/LoadingMask'
 import UserMissionList from '../../Components/UserMissionList'
 import ContainerWithBackBar from '../../Views/ContainerWithBackBar'
 import ScrollView from '../../Components/ScrollView'
 
 import CONSTANTS from '../../Constants'
-import ActionType from'../../Constants/ActionType';
-import PostAction from '../../Actions/PostActions'
+
+import Dispatcher from '../../Models/Dispatcher'
+import {setCurrentUserMissionId} from '../../Models/Actions/UserActions'
+import {setCurrentMission} from '../../Models/Actions/MissionActions'
+import {setCurrentUserMissionIndex} from '../../Models/Actions/StateActions'
 
 const styles = {
     tabsStyle: {
@@ -37,34 +36,10 @@ const styles = {
 
 class MissionSection extends Component {
 
-    constructor(props) {
-        super(props);
-
-        this.state = {
-            loading:false,
-            alert:'',
-            deleteId:-1
-        };
-    }
-
-    componentDidMount(){
-        this.unsubscribe = this.context.store.subscribe(()=>{
-            this.setState({
-                loading:false,
-                alert:'',
-                deleteId:-1
-            })
-        })
-    }
-
-    componentWillUnmount(){
-        this.unsubscribe()
-    }
-
     render(){
 
         const props = {
-            userMissionList: this.props.userMissionArray,
+            userMissionList: this.props.userMission,
             currentIndex: this.props.currentUserMissionIndex,
             comment: this.onCommentHandle.bind(this),
             onListTap: this.onTapHandle.bind(this),
@@ -74,10 +49,6 @@ class MissionSection extends Component {
 
         return (
             <ContainerWithBackBar title="我的任务">
-                <LoadingMask show={this.state.loading} />
-                <AlertDialog open={this.state.alert != ""}
-                             close={()=>this.setState({alert:""})}
-                             content={this.state.alert}/>
                 <Tabs value={this.props.currentUserMissionIndex}
                       onChange={this.handleChange.bind(this)}
                       tabItemContainerStyle={styles.tabsStyle}
@@ -93,73 +64,49 @@ class MissionSection extends Component {
         )
     }
 
-    onCommentHandle(currentUserMissionId,currentMission){
-        this.props.setCurrentUserMissionId(currentUserMissionId);
-        this.props.setCurrentMission(currentMission);
-        this.context.router.push(CONSTANTS.ROUTER_PATH.MISSION.COMMENT)
-    }
-
     onKnowMoreHandle(commentBack){
         this.setState({
             alert:"【原因】"+commentBack
         })
     }
 
+    onCommentHandle(currentUserMissionId,currentMission){
+        this.props.actions.setCurrentUserMissionId(currentUserMissionId);
+        this.props.actions.setCurrentMission(currentMission);
+        this.context.router.push(CONSTANTS.ROUTER_PATH.MISSION.COMMENT)
+    }
+
     onRePostHandle(currentUserMissionId,currentMission){
-        this.props.setCurrentUserMissionId(currentUserMissionId);
-        this.props.setCurrentMission(currentMission);
+        this.props.actions.setCurrentUserMissionId(currentUserMissionId);
+        this.props.actions.setCurrentMission(currentMission);
         this.context.router.push(CONSTANTS.ROUTER_PATH.MISSION.MISSION_POST)
     }
 
     handleChange(index){
-        this.props.setCurrentUserMissionIndex(index)
+        this.props.actions.setCurrentUserMissionIndex(index)
     };
 
     onTapHandle(currentMission){
-        this.props.setCurrentMission(currentMission)
+        this.props.actions.setCurrentMission(currentMission)
         this.context.router.push(CONSTANTS.ROUTER_PATH.MISSION.MISSION_DETAIL)
     }
 }
 
 
 MissionSection.contextTypes = {
-    router: React.PropTypes.object,
-    store: React.PropTypes.object
+    router: React.PropTypes.object
 };
 
-MissionSection.propTypes = {
-    userMissionArray: React.PropTypes.array,
-    currentUserMissionIndex: React.PropTypes.number
-}
 
-const mapState = (state)=>{
-    const userMissionArray = state.UserReducer.userMission;
-    return {
-        currentUserMissionIndex: state.StateReducer.currentUserMissionIndex,
-        userMissionArray:userMissionArray
-    }
-}
-
-const mapDispatch = (dispatch)=>{
-    return {
-        setCurrentUserMissionId:(currentUserMissionId)=>{
-            dispatch({
-                type:ActionType.USER_ACTIONS.SET_CURRENT_USER_MISSION_ID,
-                currentUserMissionId:currentUserMissionId
-            })
-        },
-        setCurrentMission:(currentMission)=>{
-            dispatch({
-                type:ActionType.MISSION_ACTIONS.SET_CURRENT_MISSION,
-                currentMission:currentMission
-            })
-        },
-        setCurrentUserMissionIndex:(route)=>{
-            dispatch({
-                type:ActionType.STATE_ACTIONS.SET_CURRENT_USER_MISSION_INDEX,
-                data:route
-            })
-        }
-    }
-}
-export default connect(mapState,mapDispatch)(MissionSection);
+export default connect(createSelector(
+    state => state.UserReducer.userMission,
+    state => state.StateReducer.currentUserMissionIndex,
+    (userMission,currentUserMissionIndex) => ({
+        userMission,
+        currentUserMissionIndex
+    })
+),Dispatcher({
+    setCurrentUserMissionId,
+    setCurrentMission,
+    setCurrentUserMissionIndex
+}))(MissionSection);

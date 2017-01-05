@@ -18,7 +18,7 @@
     padding:10px 15px;
 }
 .mission-post--wrapper{
-    margin-top:120px;
+    /*margin-top:120px;*/
 }
 .mission-post--picsWrapper,.mission-post--buttonGroup,.mission-post--commentWrapper{
     padding:0 15px;
@@ -35,4 +35,8 @@
 .mission-post--commentWrapper{
 }
 .mission-post--buttonGroup{
+    /*margin-bottom:30px;*/
+}
+.mission-post--scrollView{
+    padding-bottom:30px;
 }

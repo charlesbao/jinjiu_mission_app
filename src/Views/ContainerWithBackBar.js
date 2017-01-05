@@ -1,27 +1,17 @@
-import React, { Component } from 'react';
-import pureRender from "pure-render-decorator"
+import React  from 'react';
 
 import {Wrapper} from '../Components/FlexBox'
 import BackNavBar from '../Components/BackNavBar'
 
-class ContainerWithBackBarSection extends Component {
+const ContainerWithBackBarSection = ({title,children},{router}) => (
+    <Wrapper>
+        <BackNavBar title={title} onTap={()=>router.goBack()}/>
+        {children}
+    </Wrapper>
+);
 
-    static contextTypes = {
-        router: React.PropTypes.object
-    };
+ContainerWithBackBarSection.contextTypes = {
+    router: React.PropTypes.object
+};
 
-    constructor(props){
-        super(props)
-    }
-    render(){
-        const {title,children} = this.props;
-        return (
-            <Wrapper>
-                <BackNavBar title={title} onTap={()=>this.context.router.goBack()}/>
-                {children}
-            </Wrapper>
-        )
-    }
-}
-
-export default pureRender(ContainerWithBackBarSection)
+export default ContainerWithBackBarSection

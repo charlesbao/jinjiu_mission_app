@@ -2,6 +2,8 @@
  * Created by chalresbao on 16/12/15.
  */
 import React,{Component} from 'react'
+import DropZone from 'react-dropzone';
+
 import {connect} from 'react-redux'
 import {Box} from '../../Components/FlexBox'
 import Menu from 'material-ui/Menu'
@@ -20,7 +22,7 @@ class SettingSection extends Component {
             <ContainerWithBackBar title="设置">
                 <ScrollView style={{top:45}}>
                     <Menu>
-                        <MenuItem onTouchTap={this.onAvatarHandle.bind(this)}
+                        <MenuItem onTouchTap={()=>router.push(CONSTANTS.ROUTER_PATH.SETTING.SETTING_AVATAR)}
                                   primaryText="头像" />
                         <MenuItem onTouchTap={()=>router.push(CONSTANTS.ROUTER_PATH.SETTING.SETTING_NICKNAME)}
                                   primaryText="昵称" />
@@ -39,13 +41,8 @@ class SettingSection extends Component {
     }
 
     clearUserInformation(){
-        window.localStorage.clear()
-        this.props.clear()
-        this.context.router.replace('/')
-    }
-
-    onAvatarHandle(){
-
+        this.props.clear();
+        this.context.router.replace(CONSTANTS.ROUTER_PATH.LOGIN)
     }
 
 }
@@ -54,17 +51,10 @@ SettingSection.contextTypes = {
     router: React.PropTypes.object
 };
 
-const mapState = ()=>{
-    return {}
-}
-const mapDispatch = (dispatch)=>{
-    return {
-        clear: ()=>{
-            dispatch({
-                type:ActionType.CLEAR
-            })
-        }
+export default connect(()=>({}), (dispatch)=>({
+    clear(){
+        dispatch({
+            type:ActionType.CLEAR
+        })
     }
-}
-
-export default connect(mapState,mapDispatch)(SettingSection)
+}))(SettingSection)

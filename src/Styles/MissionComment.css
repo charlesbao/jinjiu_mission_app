@@ -13,10 +13,10 @@
     display: inline-block;
 }
 .mission-comment-title{
-    padding:10px 30px;
+    padding:10px 15px;
     line-height: 20px;
     font-size: 18px;
-    color: #676767;
+    color: #424242;
     word-break: break-all;
 }
 .mission-comment-price{

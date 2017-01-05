@@ -5,15 +5,13 @@ import React,{Component} from 'react';
 import {connect} from 'react-redux'
 import RaisedButton from 'material-ui/RaisedButton';
 import TextField from 'material-ui/TextField'
-import FontIcon from 'material-ui/FontIcon'
 import ContainerWithBackBar from '../ContainerWithBackBar'
-import AlertDialog from '../../Components/AlertDialog'
 import LoadingMask from '../../Components/LoadingMask'
+import Alert from '../../Components/AlertDialog'
 import ScrollView from '../../Components/ScrollView'
-import PostAction from '../../Actions/PostActions'
-import ACTION_TYPE from '../../Constants/ActionType'
-import CONSTANTS from '../../Constants'
 
+import Dispatcher from '../../Models/Dispatcher'
+import { postMissionComment } from '../../Models/Actions/UserActions';
 
 import '../../Styles/MissionComment.css'
 class Comment extends Component {
@@ -21,56 +19,51 @@ class Comment extends Component {
         super(props);
 
         this.state = {
+            alert:null,
             loading:false,
             comment:""
         };
     }
 
-    componentDidMount(){
-        this.unsubscribe = this.context.store.subscribe(()=>{
-            this.setState({
-                loading:false
-            })
-            this.context.router.goBack()
-        })
-    }
-    componentWillUnmount(){
-        this.unsubscribe()
-    }
     render() {
         return (
 
             <ContainerWithBackBar title="评论">
+                <Alert open={this.state.alert !== null}
+                       close={this.handleChange.bind(this)}
+                       content={this.state.alert}/>
                 <LoadingMask show={this.state.loading}/>
-                <div className="mission-comment-first--title">
-                    <i className="mission-comment-first--icon" />
-                    <span>任务标题</span>
-                </div>
-                <div className="mission-comment-title">{this.props.currentMission['title']}</div>
-                <div className="mission-comment-first--title">
-                    <i className="mission-comment-first--icon" />
-                    <span>任务金额</span>
-                </div>
-                <div className="mission-comment-price">{this.props.currentMission['price'].toFixed(2)}<span className="mission-comment-price--label">元</span></div>
-                <div className="mission-comment-wrapper">
-                    <TextField
-                        fullWidth={true}
-                        floatingLabelText="评论此任务"
-                        floatingLabelFixed={true}
-                        hintText="填写此任务相关评论"
-                        value={this.state.comment}
-                        onChange={this.handleChange.bind(this,'comment')}
-                        multiLine={true}
-                        rows={3}
-                        rowsMax={3}/>
-                    <RaisedButton label="提交评论"
-                                  style={{marginTop:15}}
-                                  secondary={true}
-                                  fullWidth={true}
-                                  onTouchTap={this.onPostComment.bind(this)}/>
-                </div>
+                <ScrollView style={{top:45}}>
+                    <div className="mission-comment-first--title">
+                        <i className="mission-comment-first--icon" />
+                        <span>任务标题</span>
+                    </div>
+                    <div className="mission-comment-title">{this.props.currentMission['title']}</div>
+                    <div className="mission-comment-wrapper">
+                        <TextField
+                            fullWidth={true}
+                            floatingLabelText="评论此任务"
+                            floatingLabelFixed={true}
+                            hintText="填写此任务相关评论"
+                            value={this.state.comment}
+                            onChange={this.handleChange.bind(this,'comment')}
+                            multiLine={true}
+                            rows={1}
+                            rowsMax={5}/>
+                        <RaisedButton label="提交评论"
+                                      style={{marginTop:15}}
+                                      secondary={true}
+                                      fullWidth={true}
+                                      onTouchTap={this.onPostComment.bind(this)}/>
+                    </div>
+                </ScrollView>
             </ContainerWithBackBar>
         )
+    }
+
+    handleClose(){
+        if(this.state.alert === "评论成功!")setTimeout(()=>this.context.router.goBack(),500)
+        this.setState({alert:null});
     }
 
     handleChange(key,evt,newValue){
@@ -80,35 +73,25 @@ class Comment extends Component {
     }
 
     onPostComment(){
+        this.setState({loading:true});
         const {currentMission,currentUserMissionId} = this.props;
-        const {comment} = this.state
-        this.props.postMissionComment(currentUserMissionId,currentMission['id'],comment)
+        this.props.actions.postMissionComment(currentUserMissionId,currentMission['id'],this.state.comment,(error)=>{
+            if(error !== null){
+                this.setState({loading:false, alert:error})
+            }else{
+                this.setState({loading:false, alert:'评论成功!'})
+            }
+        })
     }
 }
 
 Comment.contextTypes = {
-    router: React.PropTypes.object,
-    store: React.PropTypes.object
+    router: React.PropTypes.object
 };
 
-const mapState = (state)=>{
-    return {
-        currentMission: state.MissionReducer.currentMission,
-        currentUserMissionId: state.UserReducer.currentUserMissionId
-    }
-};
-
-const mapDispatch = (dispatch)=>{
-    return {
-        postMissionComment:(currentUserMissionId,missionId,comment)=>{
-            PostAction.postMissionComment(currentUserMissionId,missionId,comment,(userMission)=>{
-                dispatch({
-                    type:ACTION_TYPE.USER_ACTIONS.POST_UPDATE_USER_MISSION,
-                    userMission:userMission
-                })
-            })
-        }
-    }
-}
-
-export default connect(mapState,mapDispatch)(Comment)
+export default connect((state)=>({
+    currentMission: state.MissionReducer.currentMission,
+    currentUserMissionId: state.UserReducer.currentUserMissionId
+}),Dispatcher({
+    postMissionComment
+}))(Comment)

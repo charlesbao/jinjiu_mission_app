@@ -35,7 +35,6 @@ import Mobile from './Views/Setting/Mobile'
 import Nickname from './Views/Setting/Nickname'
 import Avatar from './Views/Setting/Avatar'
 
-
 class App extends Component {
   render() {
       return (

@@ -20,11 +20,11 @@ const MissionButtonGroup = ({onTap})=>(
 
         </Box>
         <Divider />
-        <IconFlatButton label="进行中" iconClassName="ion-document-text"
+        <IconFlatButton label="进行中" iconClassName="ion-android-clipboard"
                         onTap={()=>onTap(CONSTANTS.MISSION_CONDITION.ON_PROGRESS)} />
-        <IconFlatButton label="审核中" iconClassName="ion-clock"
+        <IconFlatButton label="审核中" iconClassName="ion-android-alarm-clock"
                         onTap={()=>onTap(CONSTANTS.MISSION_CONDITION.ON_CHECKING)} />
-        <IconFlatButton label="已完成" iconClassName="ion-flag"
+        <IconFlatButton label="已完成" iconClassName="ion-android-checkbox-outline"
                         onTap={()=>onTap(CONSTANTS.MISSION_CONDITION.ON_FINISH)} />
     </Paper>
 );

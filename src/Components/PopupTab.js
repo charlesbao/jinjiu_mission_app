@@ -157,7 +157,6 @@ class Popup extends Component {
     };
 
     handleClose(reason){
-        // alert(reason)
         this.clickAway += 1
         if(this.clickAway == 2){
             this.setState({

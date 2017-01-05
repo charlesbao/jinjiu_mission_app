@@ -14,6 +14,6 @@ const AlertDialog = ({open,close,content=""})=>(
         onRequestClose={close}>
         {content}
     </Dialog>
-)
+);
 
 export default AlertDialog

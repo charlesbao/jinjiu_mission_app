@@ -9,6 +9,9 @@ class ScrollList extends Component {
 
         this.refreshState = false;
         this.loadMoreState = false
+
+        this.wrapperId = "scroll-wrapper--"+new Date().getTime()
+        this.scrollerId = "scroller--"+new Date().getTime()
     }
 
     getScrollTop(){
@@ -16,13 +19,13 @@ class ScrollList extends Component {
     }
 
     refresh(){
-        const wrapper = document.getElementById('iScroll-wrapper')
+        const wrapper = document.getElementById(this.wrapperId)
         const pullDown = document.getElementById('iScroll-pullDown')
 
         this.refreshState = true;
         pullDown.innerHTML = '<i class="ion-android-refresh"></i><span>正在刷新</span>'
 
-        let startTime = new Date().getTime()
+        let startTime = new Date().getTime();
 
         this.props.onRefresh(()=>{
             setTimeout(()=>{
@@ -58,9 +61,9 @@ class ScrollList extends Component {
 
     iScrollInit(){
         if(this.myScroll != null)this.myScroll.destroy();
-        const wrapper = document.getElementById('iScroll-wrapper')
-        const scroller = document.getElementById('iScroll-scroller')
-        let scrollbarShow = true;
+        const wrapper = document.getElementById(this.wrapperId)
+        const scroller = document.getElementById(this.scrollerId)
+        let scrollbarShow = this.props.scrollbarShow;
 
         scroller.style.height = "auto";
         if(scroller.offsetHeight < wrapper.offsetHeight){
@@ -73,20 +76,25 @@ class ScrollList extends Component {
             scrollbars: scrollbarShow,
             click:false,
             bounce:true,
-            probeType:1,
+            probeType:2,
             fadeScrollbars:scrollbarShow,
             startY:this.props.startY
         });
 
-        this.myScroll.on('scroll', ()=> {
+        // console.log(this.myScroll)
+        this.myScroll.on('scroll', () => {
             if(this.myScroll.y > 50 && !this.refreshState){
+                this.refreshState = true;
                 wrapper.style.paddingTop = "50px";
                 this.refresh()
+            }else if(this.myScroll.y - 200 < this.myScroll.maxScrollY && !this.loadMoreState){
+                // this.loadMoreState = true;
+                // this.loadMore()
             }
         });
 
         if(this.props.initFresh){
-            document.getElementById('iScroll-wrapper').style.paddingTop = "40px";
+            document.getElementById(this.wrapperId).style.paddingTop = "40px";
             this.refresh()
         }
     }
@@ -94,11 +102,14 @@ class ScrollList extends Component {
     render(){
 
         return (
-            <div id="iScroll-wrapper"
-                 className={this.props.className}
+            <div id={this.wrapperId}
+                 className="iScroll-wrapper"
                  style={this.props.style}>
-                <div id="iScroll-scroller">
-                    <div id="iScroll-pullDown"><i className="ion-arrow-up-a" /><span>向下拉动刷新</span></div>
+                <div id={this.scrollerId}
+                     className="iScroll-scroller">
+                    <div id="iScroll-pullDown">
+                        <i className="ion-arrow-up-a" /><span>向下拉动刷新</span>
+                    </div>
                     <div>{ this.props.children }</div>
                     {
                         this.props.loadMore !== null &&
@@ -116,7 +127,8 @@ ScrollList.defaultProps = {
     children:[],
     loadMore:null,
     initFresh:false,
-    startY:0
+    startY:0,
+    scrollbarShow:true
 }
 
 export default ScrollList;

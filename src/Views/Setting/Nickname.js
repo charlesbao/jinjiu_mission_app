@@ -6,45 +6,30 @@ import {connect} from 'react-redux'
 import {Box} from '../../Components/FlexBox'
 import TextField from 'material-ui/TextField'
 import RaisedButton from 'material-ui/RaisedButton'
+import Alert from '../../Components/AlertDialog'
 import LoadingMask from '../../Components/LoadingMask'
 import ScrollView from '../../Components/ScrollView'
 import ContainerWithBackBar from '../ContainerWithBackBar'
-
-import PostAction from '../../Actions/PostActions'
-import ActionType from '../../Constants/ActionType'
-import Constants from '../../Constants'
+import Dispatcher from '../../Models/Dispatcher'
+import {postUpdateUser} from '../../Models/Actions/UserActions'
 
 class NicknameSection extends Component {
 
     constructor(props) {
         super(props)
         this.state = {
+            alert:null,
             loading:false,
             nickname:this.props.user.get('nickname')
         };
-
-    }
-
-    componentDidMount(){
-        this.unsubscribe = this.context.store.subscribe(()=>{
-            const state = this.context.store.getState()
-            console.log(state.UserReducer.error)
-            if(state.UserReducer.error == Constants.ERROR.UPDATE_USER_INFO_FAILED){
-                alert('修改失败')
-            }
-            this.setState({
-                loading:false
-            })
-        })
-    }
-
-    componentWillUnmount(){
-        this.unsubscribe()
     }
 
     render() {
         return (
             <ContainerWithBackBar title="昵称">
+                <Alert open={this.state.alert !== null}
+                       close={this.handleClose.bind(this)}
+                       content={this.state.alert}/>
                 <LoadingMask show={this.state.loading} />
                 <ScrollView style={{top:45}}>
                     <Box style={{padding:15}}>
@@ -65,6 +50,11 @@ class NicknameSection extends Component {
         )
     }
 
+    handleClose(){
+        if(this.state.alert === "昵称修改成功!")setTimeout(()=>this.context.router.goBack(),500)
+        this.setState({alert:null});
+    }
+
     handleChange(evt,newValue){
         this.setState({
             nickname:newValue
@@ -72,36 +62,24 @@ class NicknameSection extends Component {
     }
 
     onTapHandle(){
-        this.props.postUpdateUser(this.state.nickname)
-        this.setState({
-            loading:true
-        })
+        this.setState({loading:true})
+        this.props.actions.postUpdateUser({nickname:this.state.nickname},(error)=>{
+            if(error === null){
+                this.setState({loading:false, alert:'昵称修改成功!'})
+            }else{
+                this.setState({loading:false, alert:error})
+            }
+        });
     }
 }
 
 NicknameSection.contextTypes = {
-    store: React.PropTypes.object
-};
-
-const mapState = (state)=>{
-    return {
-        user: state.UserReducer.user
-    }
+    router: React.PropTypes.object
 };
 
 
-const mapDispatch = (dispatch)=>{
-    return {
-        postUpdateUser:(nickname)=>{
-            PostAction.postUpdateUserInfo({nickname:nickname},(currentUser)=>{
-                dispatch({
-                    type:ActionType.USER_ACTIONS.POST_UPDATE_USER_INFO,
-                    user:currentUser
-                })
-            })
-        }
-    }
-}
-
-
-export default connect(mapState,mapDispatch)(NicknameSection)
+export default connect((state)=>({
+    user:state.UserReducer.user
+}),Dispatcher({
+    postUpdateUser
+}))(NicknameSection)

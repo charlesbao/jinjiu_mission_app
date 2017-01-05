@@ -9,13 +9,20 @@ export default {
             callback(result)
         })
     },
+    queryMissionBySearch(searchValue,callback){
+        WebAPI.queryMissionBySearch(searchValue,function(result){
+            callback(result)
+        })
+    },
     queryMissions(page,filterIndex,callback){
         const [topFilter,subFilter] = filterIndex
         switch (topFilter) {
             case 0:
             default:
                 WebAPI.queryMissionsByDate(page, function (result) {
-                    callback(result)
+                    callback({
+                        result
+                    })
                 });
                 break;
             case 1:
